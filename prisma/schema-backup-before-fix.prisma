@@ -1,0 +1,1494 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+enum UserRole {
+  OWNER
+  ADMIN
+  USER
+}
+
+enum VerificationStatus {
+  DRAFT
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum SubjectType {
+  INDIVIDUAL
+  COMPANY
+  SUPPLIER
+  EMPLOYEE
+  DIRECTOR
+  MINE
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+  UNKNOWN
+}
+
+enum Recommendation {
+  PROCEED
+  REVIEW
+  REJECT
+}
+
+enum CheckStatus {
+  PENDING
+  RUNNING
+  PASSED
+  FAILED
+  WARNING
+  ERROR
+}
+
+enum ProviderStatus {
+  AVAILABLE
+  OFFLINE
+  MAINTENANCE
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum ReportStatus {
+
+  DRAFT
+
+  GENERATED
+
+  REVIEWED
+
+  FINAL
+
+  ARCHIVED
+
+}
+
+//////////////////////////////////////////////////////
+// AUDIT ENUMS
+//////////////////////////////////////////////////////
+
+enum AuditAction {
+
+  CREATE
+
+  UPDATE
+
+  DELETE
+
+  VIEW
+
+  EXPORT
+
+  LOGIN
+
+  LOGOUT
+
+  VERIFY
+
+  APPROVE
+
+  REJECT
+
+}
+
+//////////////////////////////////////////////////////
+// NOTIFICATION ENUMS
+//////////////////////////////////////////////////////
+
+enum NotificationStatus {
+
+  PENDING
+
+  SENT
+
+  FAILED
+
+  READ
+
+}
+
+enum NotificationChannel {
+
+  EMAIL
+
+  SMS
+
+  WHATSAPP
+
+  PUSH
+
+  IN_APP
+
+}
+
+//////////////////////////////////////////////////////
+// BILLING ENUMS
+//////////////////////////////////////////////////////
+
+enum SubscriptionStatus {
+
+  TRIAL
+
+  ACTIVE
+
+  PAUSED
+
+  CANCELLED
+
+  EXPIRED
+
+}
+
+
+enum BillingInterval {
+
+  MONTHLY
+
+  YEARLY
+
+}
+
+
+enum InvoiceStatus {
+
+  DRAFT
+
+  ISSUED
+
+  PAID
+
+  OVERDUE
+
+  CANCELLED
+
+}
+
+
+enum PaymentStatus {
+
+  PENDING
+
+  SUCCESS
+
+  FAILED
+
+  REFUNDED
+
+}
+
+//////////////////////////////////////////////////////
+// API ENUMS
+//////////////////////////////////////////////////////
+
+enum ApiKeyStatus {
+
+  ACTIVE
+
+  REVOKED
+
+  EXPIRED
+
+}
+
+enum WebhookStatus {
+
+ ACTIVE
+
+ INACTIVE
+
+ FAILED
+
+}
+
+//////////////////////////////////////////////////////
+// COMPANY
+//////////////////////////////////////////////////////
+
+model Company {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  name String
+
+  registrationNumber String?
+
+  taxNumber String?
+
+  website String?
+
+  industry String?
+
+  country String?
+
+  phone String?
+
+  email String?
+
+  addressLine1 String?
+
+  addressLine2 String?
+
+  city String?
+
+  province String?
+
+  postalCode String?
+
+  logoUrl String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  deletedAt DateTime?
+
+  // Relationships
+  profiles Profile[]
+
+  subscriptions Subscription[]
+
+  auditLogs AuditLog[]
+
+  accessLogs AccessLog[]
+
+  notifications Notification[]
+
+  apiKeys ApiKey[]
+
+  webhooks Webhook[]
+
+  verificationTemplates VerificationTemplate[]
+
+  dataRetentionPolicies DataRetentionPolicy[]
+
+  apiRequestLogs ApiRequestLog[]
+
+}
+
+//////////////////////////////////////////////////////
+// PROFILE
+//////////////////////////////////////////////////////
+
+model Profile {
+
+  /// Must match auth.users.id
+  id String @id @db.Uuid
+
+  email String @unique
+
+  firstName String
+
+  lastName String
+
+  phone String?
+
+  avatarUrl String?
+
+  jobTitle String?
+
+  role UserRole @default(USER)
+
+  companyId String? @db.Uuid
+
+  company Company?
+    @relation(
+      fields: [companyId],
+      references: [id]
+    )
+
+  isActive Boolean @default(true)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  deletedAt DateTime?
+
+  // Cases assigned to this profile
+  verificationCases VerificationCase[]
+
+  // Cases this profile created
+  createdVerifications VerificationCase[]
+    @relation("CreatedVerifications")
+
+  // Cases this profile approved
+  approvedVerifications VerificationCase[]
+    @relation("ApprovedVerifications")
+
+  auditLogs AuditLog[]
+
+  accessLogs AccessLog[]
+
+  notifications Notification[]
+}
+
+//////////////////////////////////////////////////////
+// VERIFICATION CASE
+//////////////////////////////////////////////////////
+
+model VerificationCase {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  /// Human friendly reference
+  verificationId String @unique
+
+  profileId String @db.Uuid
+
+  profile Profile
+    @relation(
+      fields: [profileId],
+      references: [id]
+    )
+
+  createdById String? @db.Uuid
+
+  createdBy Profile?
+    @relation(
+      "CreatedVerifications",
+      fields: [createdById],
+      references: [id]
+    )
+
+  approvedById String? @db.Uuid
+
+  approvedBy Profile?
+    @relation(
+      "ApprovedVerifications",
+      fields: [approvedById],
+      references: [id]
+    )
+
+  status VerificationStatus @default(DRAFT)
+
+  subjectType SubjectType
+
+  country String
+
+  confidenceScore Int?
+
+  recommendation Recommendation?
+
+  riskLevel RiskLevel @default(UNKNOWN)
+
+  notes String?
+
+  reportGenerated Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  startedAt DateTime?
+
+  completedAt DateTime?
+
+  durationSeconds Int?
+
+  deletedAt DateTime?
+
+  subject VerificationSubject?
+
+  checks VerificationCheck[]
+
+  providerResults ProviderResult[]
+
+  report Report?
+
+  @@index([profileId])
+  @@index([status])
+  @@index([country])
+}
+
+
+//////////////////////////////////////////////////////
+// VERIFICATION SUBJECT
+//////////////////////////////////////////////////////
+
+model VerificationSubject {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  verificationCaseId String @unique @db.Uuid
+
+  verificationCase VerificationCase
+    @relation(
+      fields: [verificationCaseId],
+      references: [id]
+    )
+
+  subjectType SubjectType
+
+  displayName String
+
+  firstName String?
+
+  lastName String?
+
+  companyName String?
+
+  registrationNumber String?
+
+  idNumber String?
+
+  passportNumber String?
+
+  nationality String?
+
+  dateOfBirth DateTime?
+
+  email String?
+
+  phone String?
+
+  address String?
+
+  country String
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+}
+
+//////////////////////////////////////////////////////
+// VERIFICATION CHECK
+//////////////////////////////////////////////////////
+
+model VerificationCheck {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  verificationCaseId String @db.Uuid
+
+  verificationCase VerificationCase
+    @relation(
+      fields: [verificationCaseId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  providerId String? @db.Uuid
+
+  provider Provider?
+    @relation(
+      fields: [providerId],
+      references: [id]
+    )
+
+  checkName String
+
+  description String?
+
+  status CheckStatus @default(PENDING)
+
+  startedAt DateTime?
+
+  completedAt DateTime?
+
+  executionTimeMs Int?
+
+  score Int?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  results VerificationResult[]
+
+  @@index([verificationCaseId])
+  @@index([providerId])
+  @@index([status])
+}
+
+//////////////////////////////////////////////////////
+// VERIFICATION RESULT
+//////////////////////////////////////////////////////
+
+model VerificationResult {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  verificationCheckId String @db.Uuid
+
+  verificationCheck VerificationCheck
+    @relation(
+      fields: [verificationCheckId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  title String
+
+  status CheckStatus
+
+  message String
+
+  score Int?
+
+  rawResponse Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([verificationCheckId])
+}
+
+//////////////////////////////////////////////////////
+// PROVIDER RESULT
+//////////////////////////////////////////////////////
+
+model ProviderResult {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  verificationCaseId String @db.Uuid
+
+  verificationCase VerificationCase
+    @relation(
+      fields: [verificationCaseId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  providerName String
+
+  status CheckStatus
+
+  confidence Int?
+
+  responseTimeMs Int?
+
+  requestPayload Json?
+
+  responsePayload Json?
+
+  findings Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([verificationCaseId])
+  @@index([providerName])
+}
+
+//////////////////////////////////////////////////////
+// PROVIDER
+//////////////////////////////////////////////////////
+
+model Provider {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  name String
+
+  code String @unique
+
+  description String?
+
+  status ProviderStatus @default(AVAILABLE)
+
+  country String?
+
+  website String?
+
+  apiEndpoint String?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  deletedAt DateTime?
+
+  credentials ProviderCredential[]
+
+  verificationChecks VerificationCheck[]
+}
+
+//////////////////////////////////////////////////////
+// PROVIDER CREDENTIAL
+//////////////////////////////////////////////////////
+
+model ProviderCredential {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  providerId String @db.Uuid
+
+  provider Provider
+    @relation(
+      fields: [providerId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  name String
+
+  key String
+
+  secret String?
+
+  environment String @default("PRODUCTION")
+
+  isActive Boolean @default(true)
+
+  expiresAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([providerId])
+}
+
+//////////////////////////////////////////////////////
+// REPORT
+//////////////////////////////////////////////////////
+
+model Report {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  verificationCaseId String @unique @db.Uuid
+
+  verificationCase VerificationCase
+    @relation(
+      fields: [verificationCaseId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  reportNumber String @unique
+
+  title String
+
+  status ReportStatus @default(DRAFT)
+
+  summary String?
+
+  overallScore Int?
+
+  riskLevel RiskLevel @default(UNKNOWN)
+
+  recommendation Recommendation?
+
+  generatedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  versions ReportVersion[]
+
+  sections ReportSection[]
+
+  files ReportFile[]
+
+  @@index([verificationCaseId])
+  @@index([status])
+}
+
+//////////////////////////////////////////////////////
+// REPORT VERSION
+//////////////////////////////////////////////////////
+
+model ReportVersion {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  reportId String @db.Uuid
+
+  report Report
+    @relation(
+      fields: [reportId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  versionNumber Int
+
+  generatedBy String? @db.Uuid
+
+  content Json?
+
+  hash String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([reportId, versionNumber])
+  @@index([reportId])
+}
+
+//////////////////////////////////////////////////////
+// REPORT SECTION
+//////////////////////////////////////////////////////
+
+model ReportSection {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  reportId String @db.Uuid
+
+  report Report
+    @relation(
+      fields: [reportId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  sectionName String
+
+  sectionType String
+
+  orderNumber Int
+
+  content Json?
+
+  status CheckStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+
+  @@index([reportId])
+}
+
+//////////////////////////////////////////////////////
+// REPORT FILE
+//////////////////////////////////////////////////////
+
+model ReportFile {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  reportId String @db.Uuid
+
+  report Report
+    @relation(
+      fields: [reportId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  fileName String
+
+  fileType String
+
+  fileUrl String
+
+  fileSize Int?
+
+  checksum String?
+
+  createdAt DateTime @default(now())
+
+  @@index([reportId])
+}
+
+//////////////////////////////////////////////////////
+// AUDIT LOG
+//////////////////////////////////////////////////////
+
+model AuditLog {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String? @db.Uuid
+
+  company Company?
+    @relation(
+      fields: [companyId],
+      references: [id]
+    )
+
+  profileId String? @db.Uuid
+
+  profile Profile?
+    @relation(
+      fields: [profileId],
+      references: [id]
+    )
+
+  verificationCaseId String? @db.Uuid
+
+  verificationCase VerificationCase?
+    @relation(
+      fields: [verificationCaseId],
+      references: [id]
+    )
+
+  action AuditAction
+
+  entityType String
+
+  entityId String?
+
+  description String?
+
+  metadata Json?
+
+  ipAddress String?
+
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([companyId])
+  @@index([profileId])
+  @@index([verificationCaseId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+//////////////////////////////////////////////////////
+// ACCESS LOG
+//////////////////////////////////////////////////////
+
+model AccessLog {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  profileId String? @db.Uuid
+
+  profile Profile?
+    @relation(
+      fields: [profileId],
+      references: [id]
+    )
+
+  companyId String? @db.Uuid
+
+  company Company?
+    @relation(
+      fields: [companyId],
+      references: [id]
+    )
+
+  action String
+
+  resource String?
+
+  successful Boolean @default(true)
+
+  ipAddress String?
+
+  userAgent String?
+
+  location String?
+
+  createdAt DateTime @default(now())
+
+  @@index([profileId])
+  @@index([companyId])
+  @@index([createdAt])
+}
+
+//////////////////////////////////////////////////////
+// NOTIFICATION
+//////////////////////////////////////////////////////
+
+model Notification {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String? @db.Uuid
+
+  company Company?
+    @relation(
+      fields: [companyId],
+      references: [id]
+    )
+
+  profileId String? @db.Uuid
+
+  profile Profile?
+    @relation(
+      fields: [profileId],
+      references: [id]
+    )
+
+  verificationCaseId String? @db.Uuid
+
+  verificationCase VerificationCase?
+    @relation(
+      fields: [verificationCaseId],
+      references: [id]
+    )
+
+  type NotificationType
+
+  channel NotificationChannel
+
+  status NotificationStatus @default(PENDING)
+
+  subject String
+
+  message String
+
+  metadata Json?
+
+  sentAt DateTime?
+
+  readAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  deliveries NotificationDelivery[]
+
+  @@index([companyId])
+  @@index([profileId])
+  @@index([verificationCaseId])
+  @@index([status])
+}
+
+//////////////////////////////////////////////////////
+// NOTIFICATION TEMPLATE
+//////////////////////////////////////////////////////
+
+model NotificationTemplate {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  name String @unique
+
+  type NotificationType
+
+  channel NotificationChannel
+
+  subject String
+
+  body String
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+}
+
+//////////////////////////////////////////////////////
+// NOTIFICATION DELIVERY LOG
+//////////////////////////////////////////////////////
+
+model NotificationDelivery {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  notificationId String @db.Uuid
+
+  notification Notification
+    @relation(
+      fields: [notificationId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  provider String?
+
+  externalId String?
+
+  status NotificationStatus
+
+  response Json?
+
+  deliveredAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([notificationId])
+  @@index([status])
+
+}
+
+//////////////////////////////////////////////////////
+// PLAN
+//////////////////////////////////////////////////////
+
+model Plan {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  name String
+
+  description String?
+
+  price Decimal @db.Decimal(10,2)
+
+  currency String @default("ZAR")
+
+  billingInterval BillingInterval
+
+  verificationLimit Int?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  features SubscriptionFeature[]
+
+  @@index([name])
+
+  @@index([isActive])
+
+}
+
+//////////////////////////////////////////////////////
+// SUBSCRIPTION
+//////////////////////////////////////////////////////
+
+model Subscription {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String @db.Uuid
+
+  company Company
+    @relation(
+      fields: [companyId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  planId String @db.Uuid
+
+  plan Plan
+    @relation(
+      fields: [planId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  status SubscriptionStatus @default(TRIAL)
+
+  startDate DateTime @default(now())
+
+  endDate DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
+
+  usageRecords UsageRecord[]
+
+  @@index([companyId])
+
+  @@index([planId])
+
+  @@index([status])
+
+}
+
+//////////////////////////////////////////////////////
+// SUBSCRIPTION FEATURE
+//////////////////////////////////////////////////////
+
+model SubscriptionFeature {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  planId String @db.Uuid
+
+  plan Plan
+    @relation(
+      fields: [planId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  name String
+
+  description String?
+
+  enabled Boolean @default(true)
+
+  @@index([planId])
+
+  @@unique([planId, name])
+
+}
+
+//////////////////////////////////////////////////////
+// USAGE RECORD
+//////////////////////////////////////////////////////
+
+model UsageRecord {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  subscriptionId String @db.Uuid
+
+  subscription Subscription
+    @relation(
+      fields: [subscriptionId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  verificationCaseId String? @db.Uuid
+
+  verificationCase VerificationCase?
+    @relation(
+      fields: [verificationCaseId],
+      references: [id]
+    )
+
+  usageType String
+
+  quantity Int @default(1)
+
+  createdAt DateTime @default(now())
+
+  @@index([subscriptionId])
+
+  @@index([verificationCaseId])
+
+  @@index([createdAt])
+
+}
+
+//////////////////////////////////////////////////////
+// INVOICE
+//////////////////////////////////////////////////////
+
+model Invoice {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  subscriptionId String @db.Uuid
+
+  subscription Subscription
+    @relation(
+      fields: [subscriptionId],
+      references: [id]
+    )
+
+  invoiceNumber String @unique
+
+  amount Decimal @db.Decimal(10,2)
+
+  currency String @default("ZAR")
+
+  status InvoiceStatus @default(DRAFT)
+
+  dueDate DateTime?
+
+  paidAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  payments PaymentTransaction[]
+
+  @@index([subscriptionId])
+
+  @@index([status])
+
+  @@index([dueDate])
+
+}
+
+//////////////////////////////////////////////////////
+// PAYMENT TRANSACTION
+//////////////////////////////////////////////////////
+
+model PaymentTransaction {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  invoiceId String @db.Uuid
+
+  invoice Invoice
+    @relation(
+      fields: [invoiceId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  provider String?
+
+  transactionReference String?
+
+  amount Decimal @db.Decimal(10,2)
+
+  currency String @default("ZAR")
+
+  status PaymentStatus @default(PENDING)
+
+  response Json?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([invoiceId])
+
+  @@index([status])
+
+  @@index([transactionReference])
+
+}
+
+//////////////////////////////////////////////////////
+// API KEY
+//////////////////////////////////////////////////////
+
+model ApiKey {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String @db.Uuid
+
+  company Company
+    @relation(
+      fields: [companyId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  name String
+
+  keyHash String @unique
+
+  lastUsedAt DateTime?
+
+  expiresAt DateTime?
+
+  status ApiKeyStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+
+  @@index([status])
+
+  @@index([expiresAt])
+
+}
+
+//////////////////////////////////////////////////////
+// WEBHOOK
+//////////////////////////////////////////////////////
+
+model Webhook {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String @db.Uuid
+
+  company Company
+    @relation(
+      fields: [companyId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  name String
+
+  url String
+
+  secret String?
+
+  status WebhookStatus @default(ACTIVE)
+
+  events Json?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+
+  @@index([status])
+
+  @@unique([companyId, name])
+
+}
+
+//////////////////////////////////////////////////////
+// VERIFICATION TEMPLATE
+//////////////////////////////////////////////////////
+
+model VerificationTemplate {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String? @db.Uuid
+
+  company Company?
+    @relation(
+      fields: [companyId],
+      references: [id]
+    )
+
+  name String
+
+  description String?
+
+  subjectType SubjectType
+
+  checks Json
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+
+  @@index([subjectType])
+
+  @@index([isActive])
+
+  @@unique([companyId, name])
+
+}
+
+//////////////////////////////////////////////////////
+// VERIFICATION PACKAGE
+//////////////////////////////////////////////////////
+
+model VerificationPackage {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  name String
+
+  description String?
+
+  subjectType SubjectType
+
+  price Decimal @db.Decimal(10,2)
+
+  currency String @default("ZAR")
+
+  checks Json
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([subjectType])
+
+  @@index([isActive])
+
+  @@unique([name, subjectType])
+
+}
+
+//////////////////////////////////////////////////////
+// API REQUEST LOG
+//////////////////////////////////////////////////////
+
+model ApiRequestLog {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String? @db.Uuid
+
+  company Company?
+    @relation(
+      fields: [companyId],
+      references: [id]
+    )
+
+  apiKeyId String? @db.Uuid
+
+  apiKey ApiKey?
+    @relation(
+      fields: [apiKeyId],
+      references: [id]
+    )
+
+  endpoint String
+
+  method String
+
+  statusCode Int
+
+  responseTimeMs Int?
+
+  request Json?
+
+  response Json?
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+
+  @@index([apiKeyId])
+
+  @@index([endpoint])
+
+  @@index([statusCode])
+
+  @@index([createdAt])
+
+}
+
+//////////////////////////////////////////////////////
+// DATA RETENTION POLICY
+//////////////////////////////////////////////////////
+
+model DataRetentionPolicy {
+
+  id String @id @default(uuid()) @db.Uuid
+
+  companyId String @db.Uuid
+
+  company Company
+    @relation(
+      fields: [companyId],
+      references: [id],
+      onDelete: Cascade
+    )
+
+  retentionDays Int
+
+  autoDelete Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}

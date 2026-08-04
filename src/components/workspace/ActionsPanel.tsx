@@ -57,41 +57,62 @@ export default function ActionsPanel({
 
       <div className="space-y-4">
 
-        {actions.map((action) => (
+        {actions.map((action) => {
 
-          <button
-            key={action.title}
-            disabled={action.disabled}
-            className={`w-full rounded-xl border p-4 text-left transition ${
-              action.disabled
-                ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
-                : "border-slate-200 hover:border-[#BF5000] hover:bg-orange-50"
-            }`}
-          >
+  const card = (
+    <div
+      className={`w-full rounded-xl border p-4 text-left transition ${
+        action.disabled
+          ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
+          : "border-slate-200 hover:border-[#BF5000] hover:bg-orange-50"
+      }`}
+    >
+      <div className="flex items-start gap-4">
 
-            <div className="flex items-start gap-4">
+        <div className="text-2xl">
+          {action.icon}
+        </div>
 
-              <div className="text-2xl">
-                {action.icon}
-              </div>
+        <div>
 
-              <div>
+          <div className="font-semibold">
+            {action.title}
+          </div>
 
-                <div className="font-semibold">
-                  {action.title}
-                </div>
+          <div className="text-sm text-slate-500">
+            {action.description}
+          </div>
 
-                <div className="text-sm text-slate-500">
-                  {action.description}
-                </div>
+        </div>
 
-              </div>
+      </div>
+    </div>
+  );
 
-            </div>
+  // Download Report
+  if (action.title === "Download Report") {
+    return (
+      <Link
+        key={action.title}
+        href={`/reports/${verificationId}`}
+        className="block"
+      >
+        {card}
+      </Link>
+    );
+  }
 
-          </button>
-
-        ))}
+  // All other actions remain buttons
+  return (
+    <button
+      key={action.title}
+      disabled={action.disabled}
+      className="w-full"
+    >
+      {card}
+    </button>
+  );
+})}
 
       </div>
 

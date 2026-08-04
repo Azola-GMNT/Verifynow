@@ -11,6 +11,7 @@ import FindSubject from "./FindSubject";
 import VerificationModules from "./VerificationModules";
 import VerificationProcessing from "./processing/VerificationProcessing";
 import VerificationResults from "./results/VerificationResults";
+import { verificationService } from "@/services/verificationService";
 
 import { useVerification } from "@/context/VerificationContext";
 
@@ -125,26 +126,21 @@ export default function VerificationWizard() {
   onBack={() => setStep(3)}
   onNext={() => {
 
-create({
+const verification = {
+
   verificationId,
 
   status: "Queued",
 
   subject: {
     subjectType: subjectType!,
-
     displayName: "",
-
     country: selectedCountry,
 
     fullName: undefined,
-
     companyName: undefined,
-
     registrationNumber: undefined,
-
     idNumber: undefined,
-
     passportNumber: undefined,
   },
 
@@ -162,9 +158,7 @@ create({
 
   risk: {
     confidenceScore: undefined,
-
     recommendation: undefined,
-
     riskLevel: "Unknown",
   },
 
@@ -173,11 +167,12 @@ create({
   reportGenerated: false,
 
   notes: "",
-});
 
-    setStep(5);
+};
 
-}}
+await verificationService.startVerification(verification);
+
+setStep(5);
 />
         </>
         )}

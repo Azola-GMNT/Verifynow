@@ -1,130 +1,47 @@
-import {
-  VerificationCase,
-  VerificationStatus,
-} from "@/types/verification";
-
-const STORAGE_KEY = "verifynow_verifications";
+import { VerificationCase } from "@/types/verification";
+import { verificationRepository as localRepository } from "./verificationRepository.local";
 
 class VerificationRepository {
-  private verificationCases = new Map<
-    string,
-    VerificationCase
-  >();
-
-  constructor() {
-    this.load();
-  }
-
-  private load() {
-    if (typeof window === "undefined") return;
-
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) return;
-
-    try {
-      const items: VerificationCase[] = JSON.parse(raw);
-
-      this.verificationCases.clear();
-
-      items.forEach((item) => {
-        this.verificationCases.set(
-          item.verificationId,
-          item
-        );
-      });
-    } catch (err) {
-      console.error(
-        "Failed to load verification repository",
-        err
-      );
-    }
-  }
-
-  private save() {
-    if (typeof window === "undefined") return;
-
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(this.getAllVerifications())
-    );
-  }
-
   createVerification(
     verification: VerificationCase
   ) {
-    this.verificationCases.set(
-      verification.verificationId,
+    return localRepository.createVerification(
       verification
     );
-
-    this.save();
-
-    return verification;
   }
 
   updateVerification(
     verificationId: string,
     updates: Partial<VerificationCase>
   ) {
-    const existing =
-      this.verificationCases.get(verificationId);
-
-    if (!existing) return null;
-
-    const updated: VerificationCase = {
-      ...existing,
-      ...updates,
-    };
-
-    this.verificationCases.set(
+    return localRepository.updateVerification(
       verificationId,
-      updated
+      updates
     );
-
-    this.save();
-
-    return updated;
   }
 
-  updateStatus(
-    verificationId: string,
-    status: VerificationStatus
+  deleteVerification(
+    verificationId: string
   ) {
-    return this.updateVerification(
-      verificationId,
-      { status }
+    return localRepository.deleteVerification(
+      verificationId
     );
   }
 
   getVerification(
     verificationId: string
   ) {
-    return this.verificationCases.get(
+    return localRepository.getVerification(
       verificationId
     );
   }
 
   getAllVerifications() {
-    return Array.from(
-      this.verificationCases.values()
-    ).reverse();
-  }
-
-  deleteVerification(
-    verificationId: string
-  ) {
-    this.verificationCases.delete(
-      verificationId
-    );
-
-    this.save();
+    return localRepository.getAllVerifications();
   }
 
   clear() {
-    this.verificationCases.clear();
-
-    this.save();
+    return localRepository.clear();
   }
 }
 

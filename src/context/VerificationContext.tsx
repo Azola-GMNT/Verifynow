@@ -9,13 +9,7 @@ import {
 } from "react";
 
 import { VerificationCase } from "@/types/verification";
-
-import {
-  createVerificationCase,
-  updateVerificationCase,
-  deleteVerificationCase,
-  getAllVerificationCases,
-} from "@/services/verificationService";
+import { verificationService } from "@/services/verificationService";
 
 interface VerificationContextType {
   verifications: VerificationCase[];
@@ -49,7 +43,9 @@ export function VerificationProvider({
   const create = (
     verification: VerificationCase
   ) => {
-    createVerificationCase(verification);
+    verificationService.createVerificationCase(
+      verification
+    );
 
     refresh();
   };
@@ -58,7 +54,7 @@ export function VerificationProvider({
     verificationId: string,
     updates: Partial<VerificationCase>
   ) => {
-    updateVerificationCase(
+    verificationService.updateVerificationCase(
       verificationId,
       updates
     );
@@ -69,7 +65,7 @@ export function VerificationProvider({
   const remove = (
     verificationId: string
   ) => {
-    deleteVerificationCase(
+    verificationService.deleteVerificationCase(
       verificationId
     );
 
@@ -79,7 +75,7 @@ export function VerificationProvider({
   const value = useMemo(
     () => ({
       verifications:
-        getAllVerificationCases(),
+        verificationService.getAllVerificationCases(),
 
       create,
 
@@ -89,7 +85,8 @@ export function VerificationProvider({
 
       refresh,
     }),
-    [refresh]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [forceRefresh]
   );
 
   return (

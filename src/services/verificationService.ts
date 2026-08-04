@@ -1,60 +1,65 @@
-import { verificationStore } from "@/store/verificationStore";
 import { VerificationCase } from "@/types/verification";
+import { VerificationEngine } from "@/engines/VerificationEngine";
+import { verificationRepository } from "@/repositories/verificationRepository";
 
-export function createVerificationCase(
-  verification: VerificationCase
-): VerificationCase {
-  return verificationStore.create(verification);
+class VerificationService {
+  private engine = new VerificationEngine();
+
+  createVerificationCase(
+    verification: VerificationCase
+  ) {
+    return verificationRepository.createVerification(
+      verification
+    );
+  }
+
+  updateVerificationCase(
+    verificationId: string,
+    updates: Partial<VerificationCase>
+  ) {
+    return verificationRepository.updateVerification(
+      verificationId,
+      updates
+    );
+  }
+
+  deleteVerificationCase(
+    verificationId: string
+  ) {
+    verificationRepository.deleteVerification(
+      verificationId
+    );
+  }
+
+  getAllVerificationCases() {
+    return verificationRepository.getAllVerifications();
+  }
+
+  getVerificationCase(id: string) {
+    return verificationRepository.getVerification(id);
+  }
+
+  async startVerification(
+    verification: VerificationCase
+  ) {
+    this.createVerificationCase(verification);
+
+    const results =
+      await this.engine.run(verification);
+
+    this.updateVerificationCase(
+      verification.verificationId,
+      {
+        status: "Completed",
+        results,
+      }
+    );
+
+    return this.getVerificationCase(
+      verification.verificationId
+    );
+  }
 }
 
-export function updateVerificationCase(
-  verificationId: string,
-  updates: Partial<VerificationCase>
-): VerificationCase | null {
-  return verificationStore.update(
-    verificationId,
-    updates
-  );
-}
-
-export function deleteVerificationCase(
-  verificationId: string
-): boolean {
-  return verificationStore.remove(verificationId);
-}
-
-export function getVerificationCase(
-  verificationId: string
-): VerificationCase | undefined {
-  return verificationStore.getById(
-    verificationId
-  );
-}
-
-export function getAllVerificationCases(): VerificationCase[] {
-  return verificationStore.getAll();
-}
-
-export function removeVerificationCase(
-  verificationId: string
-): boolean {
-  return verificationStore.remove(
-    verificationId
-  );
-}
-
-export function verificationExists(
-  verificationId: string
-): boolean {
-  return verificationStore.exists(
-    verificationId
-  );
-}
-
-export function clearVerificationCases(): void {
-  verificationStore.clear();
-}
-
-export function getVerificationCount(): number {
-  return verificationStore.count();
-}
+export const verificationService =
+  new VerificationService();
