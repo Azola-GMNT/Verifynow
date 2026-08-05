@@ -97,8 +97,7 @@ export function VerificationProvider({
 }
 
 export function useVerification() {
-  const context =
-    useContext(VerificationContext);
+  const context = useContext(VerificationContext);
 
   if (!context) {
     throw new Error(

@@ -30,7 +30,7 @@ export default function VerificationWizard() {
 
   const [subjectFound, setSubjectFound] = useState(false);
 
-  const [selectedChecks, setSelectedChecks] = useState<number[]>([]);
+const [selectedChecks, setSelectedChecks] = useState<number[]>([]);
 
   const [verificationId] = useState(() => {
   const now = new Date();
@@ -124,9 +124,9 @@ export default function VerificationWizard() {
           <WizardFooter
   nextLabel="Run Verification"
   onBack={() => setStep(3)}
-  onNext={() => {
+  onNext={async () => {
 
-const verification = {
+const verification: VerificationCase = {
 
   verificationId,
 
@@ -173,9 +173,11 @@ const verification = {
 await verificationService.startVerification(verification);
 
 setStep(5);
+}}
 />
         </>
         )}
+
         {/* STEP 5 */}
 
 {step === 5 && (

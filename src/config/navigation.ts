@@ -1,11 +1,19 @@
 import {
   LayoutDashboard,
-  UserRound,
+  Search,
+  History,
+  ShieldCheck,
   Building2,
-  Users,
-  BarChart3,
+  Briefcase,
+  GraduationCap,
+  Gavel,
+  Landmark,
+  Home,
+  Pickaxe,
   Plug,
+  BarChart3,
   Settings,
+  Users,
   LucideIcon,
 } from "lucide-react";
 
@@ -36,36 +44,60 @@ export const navigation: NavigationSection[] = [
     heading: "VERIFICATIONS",
     items: [
       {
-        title: "Individuals",
-        href: "/verifications/individual",
-        icon: UserRound,
+        title: "New Verification",
+        href: "/verifications/new",
+        icon: Search,
       },
       {
-        title: "Organisations",
-        href: "/verifications/organisation",
+        title: "Verification History",
+        href: "/verifications",
+        icon: History,
+      },
+    ],
+  },
+
+  {
+    heading: "MODULES",
+    items: [
+      {
+        title: "Identity",
+        href: "/modules/identity",
+        icon: ShieldCheck,
+      },
+      {
+        title: "Company",
+        href: "/modules/company",
         icon: Building2,
       },
-    ],
-  },
-
-  {
-    heading: "MANAGEMENT",
-    items: [
       {
-        title: "Team",
-        href: "/team",
-        icon: Users,
+        title: "Employment",
+        href: "/modules/employment",
+        icon: Briefcase,
       },
-    ],
-  },
-
-  {
-    heading: "INSIGHTS",
-    items: [
       {
-        title: "Insights",
-        href: "/insights",
-        icon: BarChart3,
+        title: "Education",
+        href: "/modules/education",
+        icon: GraduationCap,
+      },
+      {
+        title: "Criminal",
+        href: "/modules/criminal",
+        icon: Gavel,
+      },
+      {
+        title: "Government",
+        href: "/modules/government",
+        icon: Landmark,
+      },
+      {
+        title: "Property",
+        href: "/modules/property",
+        icon: Home,
+      },
+      {
+        title: "Mining",
+        href: "/modules/mining",
+        icon: Pickaxe,
       },
     ],
   },
@@ -77,6 +109,16 @@ export const navigation: NavigationSection[] = [
         title: "Providers",
         href: "/providers",
         icon: Plug,
+      },
+      {
+        title: "Insights",
+        href: "/insights",
+        icon: BarChart3,
+      },
+      {
+        title: "Team",
+        href: "/team",
+        icon: Users,
       },
       {
         title: "Settings",

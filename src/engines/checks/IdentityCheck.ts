@@ -3,8 +3,12 @@ import { BaseVerificationCheck } from "./BaseVerificationCheck";
 import { VerificationCase } from "@/types/verification";
 import { CheckResult } from "@/types/check";
 
-export class IdentityCheck
-  extends BaseVerificationCheck {
+import { IdNumberCheck } from "@/engines/modules/identity/checks/IdNumberCheck";
+import { PassportCheck } from "@/engines/modules/identity/checks/PassportCheck";
+import { FaceMatchCheck } from "@/engines/modules/identity/checks/FaceMatchCheck";
+import { BiometricCheck } from "@/engines/modules/identity/checks/BiometricCheck";
+
+export class IdentityCheck extends BaseVerificationCheck {
 
   readonly id = "identity";
 
@@ -12,15 +16,28 @@ export class IdentityCheck
 
   readonly category = "Identity";
 
+  private checks = [
+
+    new IdNumberCheck(),
+    new PassportCheck(),
+    new FaceMatchCheck(),
+    new BiometricCheck(),
+];
+
   async execute(
     verification: VerificationCase
   ): Promise<CheckResult> {
 
-    const startedAt = new Date();
-
-    await new Promise(resolve =>
-      setTimeout(resolve, 1200)
+    const results = await Promise.all(
+      this.checks.map(check =>
+        check.execute(verification)
+      )
     );
+
+    const passed =
+      results.every(
+        result => result.status === "PASSED"
+      );
 
     return {
 
@@ -28,31 +45,24 @@ export class IdentityCheck
 
       provider: "VerifyNow",
 
-      status: "PASSED",
+      status: passed ? "PASSED" : "FAILED",
 
-      score: 100,
+      score: Math.round(
+        results.reduce(
+          (total, result) => total + result.score,
+          0
+        ) / results.length
+      ),
 
-      message:
-        "Identity successfully verified.",
+      message: passed
+        ? "Identity verification completed successfully."
+        : "Identity verification failed.",
 
-      evidence: [
+      evidence: results.flatMap(
+        result => result.evidence
+      ),
 
-        {
-          title: "ID Number",
-          value:
-            verification.subject.idNumber ??
-            "Unavailable",
-        },
-
-        {
-          title: "Country",
-          value:
-            verification.subject.country,
-        },
-
-      ],
-
-      startedAt,
+      startedAt: results[0].startedAt,
 
       completedAt: new Date(),
 

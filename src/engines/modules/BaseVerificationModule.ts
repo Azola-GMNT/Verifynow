@@ -13,8 +13,28 @@ export abstract class BaseVerificationModule {
 
   abstract readonly metadata: VerificationModuleMetadata;
 
-  abstract execute(
+  protected abstract readonly checks: {
+    execute(
+      verification: VerificationCase
+    ): Promise<CheckResult>;
+  }[];
+
+  async execute(
     verification: VerificationCase
-  ): Promise<CheckResult[]>;
+  ): Promise<CheckResult[]> {
+
+    const results: CheckResult[] = [];
+
+    for (const check of this.checks) {
+
+      results.push(
+        await check.execute(verification)
+      );
+
+    }
+
+    return results;
+
+  }
 
 }

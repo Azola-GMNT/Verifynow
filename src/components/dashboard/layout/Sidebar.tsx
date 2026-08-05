@@ -8,7 +8,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-72 border-r border-slate-200 bg-white lg:flex lg:flex-col">
+    <aside className="hidden w-80 border-r border-slate-200 bg-white lg:flex lg:flex-col">
       {/* Logo */}
       <div className="border-b border-slate-200 p-8">
         <h1 className="text-2xl font-bold">

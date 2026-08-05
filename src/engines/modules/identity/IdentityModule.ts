@@ -1,13 +1,15 @@
 import { BaseVerificationModule } from "../BaseVerificationModule";
 
-import { VerificationCase } from "@/types/verification";
+import { IdNumberCheck } from "./checks/IdNumberCheck";
+import { PassportCheck } from "./checks/PassportCheck";
+import { FaceMatchCheck } from "./checks/FaceMatchCheck";
+import { BiometricCheck } from "./checks/BiometricCheck";
+import { DHAStatusCheck } from "./checks/DHAStatusCheck";
+import { DeceasedRegisterCheck } from "./checks/DeceasedRegisterCheck";
+import { CitizenshipCheck } from "./checks/CitizenshipCheck";
+import { WatchlistCheck } from "./checks/WatchlistCheck";
 
-import { CheckResult } from "@/types/check";
-
-import { IdentityCheck } from "@/engines/checks/IdentityCheck";
-
-export class IdentityModule
-  extends BaseVerificationModule {
+export class IdentityModule extends BaseVerificationModule {
 
   readonly metadata = {
 
@@ -24,30 +26,24 @@ export class IdentityModule
 
   };
 
-  private checks = [
+  protected readonly checks = [
 
-    new IdentityCheck(),
+    new IdNumberCheck(),
+
+    new PassportCheck(),
+
+    new FaceMatchCheck(),
+
+    new BiometricCheck(),
+
+    new CitizenshipCheck(),
+
+    new DHAStatusCheck(),
+
+    new WatchlistCheck(),
+
+    new DeceasedRegisterCheck(),
 
   ];
-
-  async execute(
-    verification: VerificationCase
-  ): Promise<CheckResult[]> {
-
-    const results: CheckResult[] = [];
-
-    for (const check of this.checks) {
-
-      results.push(
-        await check.execute(
-          verification
-        )
-      );
-
-    }
-
-    return results;
-
-  }
 
 }

@@ -14,7 +14,9 @@ export class VerificationPipeline {
       VerificationModuleResult[] = [];
 
     const modules =
-      moduleRegistry.getAll();
+    moduleRegistry.getModulesForVerification(
+        verification
+    );
 
     for (const module of modules) {
 
