@@ -121,10 +121,10 @@ export const navigation: NavigationSection[] = [
         icon: Users,
       },
       {
-        title: "Settings",
-        href: "/settings",
-        icon: Settings,
-      },
+  title: "Preferences",
+  href: "/preferences",
+  icon: Settings,
+}
     ],
   },
 ];

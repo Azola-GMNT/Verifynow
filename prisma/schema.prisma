@@ -15,12 +15,30 @@ enum UserRole {
 
 model Company {
   id                 String   @id @default(cuid())
+
   name               String
   registrationNumber String?
   taxNumber          String?
+
   industry           String
   country            String
+
   website            String?
+
+  logoUrl            String?
+
+  supportEmail       String?
+  supportPhone       String?
+
+  addressLine1       String?
+  addressLine2       String?
+
+  city               String?
+  province           String?
+  postalCode         String?
+
+  subscriptionPlan   String?
+  subscriptionStatus String?
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -29,27 +47,48 @@ model Company {
 }
 
 model User {
-  id              String   @id @default(cuid())
+  id                   String   @id @default(cuid())
 
-  firstName       String
-  lastName        String
+  firstName            String
+  lastName             String
 
-  email           String   @unique
-  phone           String?
+  email                String   @unique
+  phone                String?
 
-  passwordHash    String
+  // Supabase Auth User ID
+  authId               String?  @unique
 
-  jobTitle        String?
+  avatarUrl            String?
 
-  emailVerified   Boolean  @default(false)
+  jobTitle             String?
 
-  isActive        Boolean  @default(true)
+  emailVerified        Boolean  @default(false)
 
-  role            UserRole @default(USER)
+  isActive             Boolean  @default(true)
 
-  companyId       String?
-  company         Company? @relation(fields: [companyId], references: [id])
+  role                 UserRole @default(USER)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  companyId            String?
+  company              Company? @relation(fields: [companyId], references: [id])
+
+  // Preferences
+
+  preferredLanguage    String   @default("English")
+  preferredTimezone    String   @default("Africa/Johannesburg")
+  preferredCountry     String   @default("South Africa")
+  theme                String   @default("light")
+
+  // Security
+
+  twoFactorEnabled     Boolean  @default(false)
+  twoFactorSecret      String?
+
+  failedLoginAttempts  Int      @default(0)
+
+  lastLogin            DateTime?
+
+  passwordExpiresAt    DateTime?
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
