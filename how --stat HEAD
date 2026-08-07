@@ -1,0 +1,3 @@
+[33mb4e8112[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Align dashboard with verification status enum
+[33meac3be1[m Fix dashboard verification status
+[33m1e48169[m[33m ([m[1;31morigin/feature/supabase-backend[m[33m, [m[1;32mfeature/supabase-backend[m[33m)[m Prisma.config update
