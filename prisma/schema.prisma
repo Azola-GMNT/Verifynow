@@ -14,81 +14,142 @@ enum UserRole {
 }
 
 model Company {
-  id                 String   @id @default(cuid())
+  id String @id @default(cuid())
 
   name               String
   registrationNumber String?
   taxNumber          String?
 
-  industry           String
-  country            String
+  industry String
+  country  String
 
-  website            String?
+  website String?
 
-  logoUrl            String?
+  logoUrl String?
 
-  supportEmail       String?
-  supportPhone       String?
+  supportEmail String?
+  supportPhone String?
 
-  addressLine1       String?
-  addressLine2       String?
+  addressLine1 String?
+  addressLine2 String?
 
-  city               String?
-  province           String?
-  postalCode         String?
+  city       String?
+  province   String?
+  postalCode String?
 
   subscriptionPlan   String?
   subscriptionStatus String?
 
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  users              User[]
+  users User[]
 }
 
 model User {
-  id                   String   @id @default(cuid())
+  id String @id @default(cuid())
 
-  firstName            String
-  lastName             String
+  firstName String
+  lastName  String
 
-  email                String   @unique
-  phone                String?
+  email String  @unique
+  phone String?
 
-  // Supabase Auth User ID
-  authId               String?  @unique
+  authId String? @unique
 
-  avatarUrl            String?
+  avatarUrl String?
 
-  jobTitle             String?
+  jobTitle String?
 
-  emailVerified        Boolean  @default(false)
+  emailVerified Boolean @default(false)
 
-  isActive             Boolean  @default(true)
+  isActive Boolean @default(true)
 
-  role                 UserRole @default(USER)
+  role UserRole @default(USER)
 
-  companyId            String?
-  company              Company? @relation(fields: [companyId], references: [id])
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
 
-  // Preferences
+  preferences   UserPreferences?
+  security      SecuritySettings?
+  notifications NotificationSettings?
 
-  preferredLanguage    String   @default("English")
-  preferredTimezone    String   @default("Africa/Johannesburg")
-  preferredCountry     String   @default("South Africa")
-  theme                String   @default("light")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
-  // Security
+model UserPreferences {
+  id String @id @default(cuid())
 
-  twoFactorEnabled     Boolean  @default(false)
-  twoFactorSecret      String?
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  failedLoginAttempts  Int      @default(0)
+  theme String @default("light")
 
-  lastLogin            DateTime?
+  language String @default("English")
 
-  passwordExpiresAt    DateTime?
+  timezone String @default("Africa/Johannesburg")
 
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  country String @default("South Africa")
+
+  dateFormat String @default("DD/MM/YYYY")
+
+  dashboardRefresh Int @default(30)
+
+  landingPage String @default("dashboard")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SecuritySettings {
+  id String @id @default(cuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  twoFactorEnabled Boolean @default(false)
+
+  twoFactorSecret String?
+
+  sessionTimeout Int @default(30)
+
+  maxLoginAttempts Int @default(3)
+
+  failedLoginAttempts Int @default(0)
+
+  auditLogging Boolean @default(true)
+
+  passwordExpiryDays Int @default(90)
+
+  passwordExpiresAt DateTime?
+
+  lastLogin DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationSettings {
+  id String @id @default(cuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  emailNotifications Boolean @default(true)
+
+  smsNotifications Boolean @default(false)
+
+  pushNotifications Boolean @default(true)
+
+  verificationAlerts Boolean @default(true)
+
+  weeklyReports Boolean @default(true)
+
+  securityAlerts Boolean @default(true)
+
+  productUpdates Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

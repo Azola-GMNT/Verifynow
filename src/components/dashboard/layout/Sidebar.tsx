@@ -3,9 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navigation } from "@/config/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export default function Sidebar() {
   const pathname = usePathname();
+
+  // Hook must be declared here
+  const { user } = useCurrentUser();
 
   return (
     <aside className="hidden w-80 border-r border-slate-200 bg-white lg:flex lg:flex-col">
@@ -56,8 +60,13 @@ export default function Sidebar() {
 
       {/* User */}
       <div className="border-t border-slate-200 p-6">
-        <p className="font-semibold">Azola Tshobonga</p>
-        <p className="text-sm text-slate-500">GMNT Holdings</p>
+        <p className="font-semibold">
+          {user?.email ?? "Not Signed In"}
+        </p>
+
+        <p className="text-sm text-slate-500">
+          {user ? "Authenticated User" : ""}
+        </p>
       </div>
     </aside>
   );

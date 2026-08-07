@@ -32,37 +32,40 @@ export default function LoginForm() {
       password,
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       setError("Incorrect email or password.");
       return;
     }
 
+    // Login successful
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (
     <Card className="rounded-3xl shadow-lg">
       <CardContent className="p-10">
-
         <form
           onSubmit={handleLogin}
           className="space-y-5"
         >
-
           <Input
             type="email"
             placeholder="Business Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) =>
+              setEmail(e.target.value)
+            }
           />
 
           <Input
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>
+              setPassword(e.target.value)
+            }
           />
 
           {error && (
@@ -72,16 +75,13 @@ export default function LoginForm() {
           )}
 
           <div className="flex items-center justify-between">
-
             <label className="flex items-center gap-2 text-sm text-slate-600">
-
               <input
                 type="checkbox"
                 className="accent-[#BF5000]"
               />
 
               Remember Me
-
             </label>
 
             <Link
@@ -90,7 +90,6 @@ export default function LoginForm() {
             >
               Forgot Password?
             </Link>
-
           </div>
 
           <Button
@@ -98,24 +97,21 @@ export default function LoginForm() {
             disabled={loading}
             className="h-12 w-full bg-[#BF5000] hover:bg-[#a84600]"
           >
-            {loading ? "Logging In..." : "Login"}
+            {loading
+              ? "Logging In..."
+              : "Login"}
           </Button>
 
           <p className="text-center text-sm text-slate-600">
-
             Don't have an account?{" "}
-
             <Link
               href="/register"
               className="font-semibold text-[#BF5000]"
             >
               Register
             </Link>
-
           </p>
-
         </form>
-
       </CardContent>
     </Card>
   );
