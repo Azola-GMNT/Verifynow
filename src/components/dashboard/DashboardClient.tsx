@@ -3,32 +3,33 @@
 import SectionCard from "@/components/dashboard/cards/SectionCard";
 import RecentVerifications from "@/components/dashboard/RecentVerifications";
 import { useVerification } from "@/context/VerificationContext";
+import { VerificationStatus } from "@/types/verification/enums";
 
 export default function DashboardClient() {
   const { verifications } = useVerification();
 
   const failed = verifications.filter(
-    (v) => v.status === "Failed"
+    (v) => v.status === VerificationStatus.Failed
   ).length;
 
   const running = verifications.filter(
-    (v) => v.status === "Running"
+    (v) => v.status === VerificationStatus.Running
   ).length;
 
   const queued = verifications.filter(
-    (v) => v.status === "Queued"
+    (v) => v.status === VerificationStatus.Queued
   ).length;
 
   const completed = verifications.filter(
-    (v) => v.status === "Completed"
+    (v) => v.status === VerificationStatus.Completed
   ).length;
 
   const archived = verifications.filter(
-    (v) => v.status === "Archived"
+    (v) => v.status === VerificationStatus.Archived
   ).length;
 
   const longRunning = verifications.filter((v) => {
-    if (v.status !== "Running") return false;
+    if (v.status !== VerificationStatus.Running) return false;
 
     const created = new Date(v.timeline.createdAt).getTime();
 

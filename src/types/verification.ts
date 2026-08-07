@@ -1,10 +1,4 @@
-export type VerificationStatus =
-  | "Draft"
-  | "Queued"
-  | "Running"
-  | "Completed"
-  | "Failed"
-  | "Cancelled";
+import { VerificationStatus } from "./verification/enums";
 
 export type RiskLevel =
   | "Low"
