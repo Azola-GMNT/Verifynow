@@ -12,8 +12,8 @@ export default function DashboardClient() {
   ).length;
 
   const manualReview = verifications.filter(
-    (v) => v.status === "Manual Review"
-  ).length;
+  (v) => v.status === "Running"
+).length;
 
   const awaitingDocuments = verifications.filter(
     (v) => v.status === "Awaiting Documents"

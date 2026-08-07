@@ -1,6 +1,9 @@
 export enum VerificationStatus {
+  Draft = "Draft",
   Queued = "Queued",
   Running = "Running",
+  AwaitingDocuments = "Awaiting Documents",
+  ManualReview = "Manual Review",
   Completed = "Completed",
   Failed = "Failed",
   Archived = "Archived",

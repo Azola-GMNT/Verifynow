@@ -21,9 +21,12 @@ enum VerificationStatus {
   DRAFT
   QUEUED
   RUNNING
+  AWAITING_DOCUMENTS
+  MANUAL_REVIEW
   COMPLETED
   FAILED
   CANCELLED
+  ARCHIVED
 }
 
 enum SubjectType {
