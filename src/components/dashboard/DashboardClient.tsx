@@ -11,100 +11,90 @@ export default function DashboardClient() {
     (v) => v.status === "Failed"
   ).length;
 
-  const manualReview = verifications.filter(
-  (v) => v.status === "Running"
-).length;
-
-  const awaitingDocuments = verifications.filter(
-    (v) => v.status === "Awaiting Documents"
+  const running = verifications.filter(
+    (v) => v.status === "Running"
   ).length;
 
-  const providerErrors = verifications.filter(
-    (v) => v.status === "Provider Error"
+  const queued = verifications.filter(
+    (v) => v.status === "Queued"
+  ).length;
+
+  const completed = verifications.filter(
+    (v) => v.status === "Completed"
+  ).length;
+
+  const archived = verifications.filter(
+    (v) => v.status === "Archived"
   ).length;
 
   const longRunning = verifications.filter((v) => {
-    if (v.status !== "Processing") return false;
+    if (v.status !== "Running") return false;
 
     const created = new Date(v.timeline.createdAt).getTime();
 
     return Date.now() - created > 5 * 60 * 1000;
   }).length;
 
-return (
-  <div className="mt-8 flex w-[1466px] gap-6 items-start">
+  return (
+    <>
+      {/* Recent Verifications */}
+      <div className="w-[500px] flex-shrink-0">
+        <RecentVerifications />
+      </div>
 
-    {/* Recent Verifications */}
-    <div className="w-[500px] flex-shrink-0">
-      <RecentVerifications />
-    </div>
-
-    {/* Needs Attention */}
-    <div className="w-[480px] flex-shrink-0">
-
-      <SectionCard
-        title="Needs Attention"
-        subtitle="Items requiring action"
-      >
-
+      {/* Needs Attention */}
+      <div className="w-[480px] flex-shrink-0">
+        <SectionCard
+          title="Verification Overview"
+          subtitle="Current verification activity"
+        >
           <div className="space-y-3">
 
             <button className="flex w-full items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 transition hover:bg-red-100">
-
               <span>🔴 Failed Verifications</span>
-
               <span className="rounded-lg bg-red-200 px-3 py-1 text-sm font-bold">
                 {failed}
               </span>
-
             </button>
 
             <button className="flex w-full items-center justify-between rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 transition hover:bg-orange-100">
-
-              <span>🟠 Manual Reviews</span>
-
+              <span>🟠 Running Verifications</span>
               <span className="rounded-lg bg-orange-200 px-3 py-1 text-sm font-bold">
-                {manualReview}
+                {running}
               </span>
-
             </button>
 
             <button className="flex w-full items-center justify-between rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 transition hover:bg-yellow-100">
-
-              <span>🟡 Awaiting Documents</span>
-
+              <span>🟡 Queued Verifications</span>
               <span className="rounded-lg bg-yellow-200 px-3 py-1 text-sm font-bold">
-                {awaitingDocuments}
+                {queued}
               </span>
+            </button>
 
+            <button className="flex w-full items-center justify-between rounded-xl border border-green-200 bg-green-50 px-4 py-3 transition hover:bg-green-100">
+              <span>🟢 Completed Verifications</span>
+              <span className="rounded-lg bg-green-200 px-3 py-1 text-sm font-bold">
+                {completed}
+              </span>
             </button>
 
             <button className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:bg-slate-100">
-
-              <span>⚠ Provider Errors</span>
-
+              <span>📦 Archived Verifications</span>
               <span className="rounded-lg bg-slate-200 px-3 py-1 text-sm font-bold">
-                {providerErrors}
+                {archived}
               </span>
-
             </button>
 
             <button className="flex w-full items-center justify-between rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 transition hover:bg-blue-100">
-
               <span>⏱ Long Running Jobs</span>
-
               <span className="rounded-lg bg-blue-200 px-3 py-1 text-sm font-bold">
                 {longRunning}
               </span>
-
             </button>
 
           </div>
-
         </SectionCard>
-
       </div>
-
-    </div>
+    </>
   );
 }
