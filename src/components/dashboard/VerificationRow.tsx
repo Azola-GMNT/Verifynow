@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { VerificationRequest } from "@/types/verification";
+import { VerificationCase } from "@/types/verification";
 
 interface VerificationRowProps {
-  verification: VerificationRequest;
+  verification: VerificationCase;
 }
 
 export default function VerificationRow({
