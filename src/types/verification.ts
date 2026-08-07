@@ -1,4 +1,4 @@
-import { VerificationStatus } from "./verification/enums";
+import { VerificationStatus } from "@/types/verification/enums";
 
 export type RiskLevel =
   | "Low"
