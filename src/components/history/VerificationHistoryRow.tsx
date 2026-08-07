@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 
-import { VerificationRequest } from "@/types/verification";
+import { VerificationCase } from "@/types/verification";
 
 interface Props {
-  verification: VerificationRequest;
+  verification: VerificationCase;
 }
 
 export default function VerificationHistoryRow({
@@ -41,18 +41,14 @@ export default function VerificationHistoryRow({
       </td>
 
       <td>
+  {verification.risk.confidenceScore ?? "--"}%
+</td>
 
-        {verification.confidenceScore ?? "--"}%
-
-      </td>
-
-      <td>
-
-        {new Date(
-          verification.createdAt
-        ).toLocaleDateString()}
-
-      </td>
+<td>
+  {new Date(
+    verification.timeline.createdAt
+  ).toLocaleDateString()}
+</td>
 
       <td>
 
