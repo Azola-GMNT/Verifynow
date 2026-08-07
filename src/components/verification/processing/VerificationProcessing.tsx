@@ -12,7 +12,8 @@ import { useVerification } from "@/context/VerificationContext";
 
 import { runProviders } from "@/engines/providerEngine";
 import { calculateRisk } from "@/engines/riskEngine";
-import { buildVerificationTimeline } from "@/engines/timelineBuilder";
+
+import { VerificationStatus } from "@/types/verification/enums";
 
 interface Props {
   verificationId: string;
@@ -47,7 +48,7 @@ export default function VerificationProcessing({
     setStatus("Running");
 
     update(verificationId, {
-      status: "Running",
+      status: VerificationStatus.Running,
 
       timeline: {
         createdAt: new Date().toISOString(),
@@ -83,31 +84,26 @@ export default function VerificationProcessing({
         const risk =
           calculateRisk(providerResponse.results);
 
-        const timeline =
-          buildVerificationTimeline();
+        const now = new Date().toISOString();
 
-        setStatus("Completed");
+setStatus("Completed");
 
-        update(verificationId, {
-          status: "Completed",
+update(verificationId, {
+  status: VerificationStatus.Completed,
 
-          providers:
-            providerResponse.providers,
+  providers: providerResponse.providers,
 
-          results:
-            providerResponse.results,
+  results: providerResponse.results,
 
-          risk,
+  risk,
 
-          timeline: {
-            ...timeline,
-            createdAt: timeline.createdAt,
-            startedAt: timeline.startedAt,
-            completedAt: timeline.completedAt,
-            durationSeconds:
-              checks.length * 1.2,
-          },
-        });
+  timeline: {
+    createdAt: now,
+    startedAt: now,
+    completedAt: now,
+    durationSeconds: checks.length * 1.2,
+  },
+});
 
         setTimeout(() => {
           onCompleted();
