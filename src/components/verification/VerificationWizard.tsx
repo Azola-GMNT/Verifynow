@@ -14,6 +14,8 @@ import VerificationResults from "./results/VerificationResults";
 import { verificationService } from "@/services/verificationService";
 
 import { useVerification } from "@/context/VerificationContext";
+import { VerificationCase } from "@/types/verification";
+import { VerificationStatus } from "@/types/verification/enums";
 
 export default function VerificationWizard() {
   const router = useRouter();
@@ -130,7 +132,7 @@ const verification: VerificationCase = {
 
   verificationId,
 
-  status: "Queued",
+  status: VerificationStatus.Queued,
 
   subject: {
     subjectType: subjectType!,
