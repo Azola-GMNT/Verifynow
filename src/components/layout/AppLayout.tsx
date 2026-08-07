@@ -1,5 +1,5 @@
 import Sidebar from "@/components/dashboard/layout/Sidebar";
-import Header from "@/components/dashboard/layout/Header";
+import Topbar from "@/components/dashboard/layout/Topbar";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -17,7 +17,7 @@ export default function AppLayout({
 
         <div className="flex flex-1 flex-col">
 
-          <Header />
+          <Topbar />
 
           <main className="flex-1 p-8">
             {children}
