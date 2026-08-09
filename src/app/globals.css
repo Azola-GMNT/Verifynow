@@ -37,6 +37,7 @@ body {
 .animate-providerTicker {
 
   animation: providerTicker 35s linear infinite;
+  width: max-content;
 
 }
 

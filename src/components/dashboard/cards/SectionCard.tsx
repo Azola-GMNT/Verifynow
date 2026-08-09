@@ -10,10 +10,8 @@ export default function SectionCard({
   children,
 }: SectionCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-
+    <div className="overflow-hidden rounded-2xl bg-white">
       <div className="border-b border-slate-100 px-6 py-5">
-
         <h2 className="text-lg font-semibold text-slate-900">
           {title}
         </h2>
@@ -23,13 +21,11 @@ export default function SectionCard({
             {subtitle}
           </p>
         )}
-
       </div>
 
       <div className="p-6">
         {children}
       </div>
-
     </div>
   );
 }

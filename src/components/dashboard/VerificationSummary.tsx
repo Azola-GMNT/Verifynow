@@ -45,14 +45,12 @@ export default function VerificationSummary() {
   ];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-
+    <div className="mb-8">
       <h2 className="mb-6 text-xl font-semibold">
         Verification Summary
       </h2>
 
       <div className="grid gap-6 md:grid-cols-4">
-
         {stats.map((stat) => (
           <div
             key={stat.title}
@@ -67,12 +65,9 @@ export default function VerificationSummary() {
             >
               {stat.value}
             </div>
-
           </div>
         ))}
-
       </div>
-
     </div>
   );
 }
