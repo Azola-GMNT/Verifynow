@@ -30,7 +30,7 @@ export class EducationModule
 
   };
 
-  private checks = [
+  protected readonly checks = [
 
     new MatricCheck(),
 
