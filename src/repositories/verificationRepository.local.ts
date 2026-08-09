@@ -1,8 +1,8 @@
 import {
   VerificationCase,
-  VerificationStatus,
 } from "@/types/verification";
 
+import { VerificationStatus } from "@/types/verification/enums";
 const STORAGE_KEY = "verifynow_verifications";
 
 class VerificationRepository {

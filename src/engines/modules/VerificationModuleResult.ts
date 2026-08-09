@@ -1,7 +1,6 @@
-import { CheckResult } from "@/types/check";
+import { VerificationResult } from "@/types/verification";
 
 export interface VerificationModuleResult {
-
   moduleId: string;
 
   moduleName: string;
@@ -12,6 +11,5 @@ export interface VerificationModuleResult {
 
   successful: boolean;
 
-  results: CheckResult[];
-
+  results: VerificationResult[];
 }

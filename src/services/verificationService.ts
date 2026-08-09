@@ -1,6 +1,7 @@
 import { VerificationCase } from "@/types/verification";
 import { VerificationEngine } from "@/engines/VerificationEngine";
 import { verificationRepository } from "@/repositories/verificationRepository";
+import { VerificationStatus } from "@/types/verification/enums";
 
 class VerificationService {
   private engine = new VerificationEngine();
@@ -42,15 +43,24 @@ class VerificationService {
   async startVerification(
     verification: VerificationCase
   ) {
+    // Create the case first
     this.createVerificationCase(verification);
 
-    const results =
+    // Run the verification engine
+    const moduleResults =
       await this.engine.run(verification);
 
+    // Flatten module results into the results
+    // expected by VerificationCase
+    const results = moduleResults.flatMap(
+      (module) => module.results
+    );
+
+    // Mark verification as completed
     this.updateVerificationCase(
       verification.verificationId,
       {
-        status: "Completed",
+        status: VerificationStatus.Completed,
         results,
       }
     );

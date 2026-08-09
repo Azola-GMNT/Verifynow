@@ -11,6 +11,7 @@ import { FinancialModule } from "../modules/financial/FinancialModule";
 import { GovernmentModule } from "../modules/government/GovernmentModule";
 
 import { MiningModule } from "../modules/mining/MiningModule";
+import { VerificationCase } from "@/types/verification";
 
 class ModuleRegistry {
 
@@ -82,18 +83,10 @@ this.register(
 
   }
 
-  getModulesForVerification(
+ getModulesForVerification(
   verification: VerificationCase
 ) {
-
-  return this.getAll().filter(module => {
-
-    return verification.selectedChecks.includes(
-      module.metadata.id
-    );
-
-  });
-
+  return this.getAll();
 }
 
 }

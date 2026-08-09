@@ -45,6 +45,8 @@ export function runProviders(
 
       status: "Passed",
 
+        score: 98,
+
       message: "Verification completed successfully",
 
     });
