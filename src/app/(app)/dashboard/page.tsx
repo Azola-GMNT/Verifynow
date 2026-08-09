@@ -1,7 +1,7 @@
 import DashboardLayout from "@/components/dashboard/layout/DashboardLayout";
 import VerificationSummary from "@/components/dashboard/VerificationSummary";
 import DashboardClient from "@/components/dashboard/DashboardClient";
-import DashboardGreeting from "@/components/dashboard/DashboardGreeting";
+
 import ProviderStatusTicker from "@/components/dashboard/ProviderStatusTicker";
 
 import Link from "next/link";
@@ -10,8 +10,6 @@ import { Button } from "@/components/ui/button";
 export default function DashboardPage() {
   return (
     <DashboardLayout>
-
-      <DashboardGreeting />
       
           <div className="mx-auto max-w-[980px]">
 
