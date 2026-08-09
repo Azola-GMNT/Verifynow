@@ -1,5 +1,6 @@
 export type CheckStatus =
   | "PENDING"
+  | "PENDING_PROVIDER"
   | "RUNNING"
   | "PASSED"
   | "FAILED"
