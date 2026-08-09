@@ -1,6 +1,6 @@
 import { Provider } from "./types";
 
-export const internationalProviders = [
+export const internationalProviders: Provider[] = [
 
   {
     id: "worldcheck",
