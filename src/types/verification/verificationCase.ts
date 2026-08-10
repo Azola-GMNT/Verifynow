@@ -14,19 +14,19 @@ export interface VerificationCase {
 
   selectedChecks: number[];
 
-  completedChecks?: number[];
+  completedChecks: number[];
 
   results: VerificationResult[];
 
-  providers?: ProviderResult[];
+  providers: ProviderResult[];
 
   timeline: VerificationTimeline;
 
   risk: VerificationRisk;
 
-  createdBy?: string;
+  createdBy: string;
 
-  reportGenerated?: boolean;
+  reportGenerated: boolean;
 
   notes?: string;
 }

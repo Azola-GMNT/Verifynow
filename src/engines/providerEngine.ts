@@ -1,64 +1,40 @@
-import {
-  ProviderResult,
-  VerificationResult,
-} from "@/types/verification";
+import type { CheckResult } from "@/types/check";
+import type { ProviderResult } from "@/types/verification/provider";
 
-export interface ProviderResponse {
-
+export interface ProviderCheckResponse {
   providers: ProviderResult[];
-
-  results: VerificationResult[];
-
+  results: CheckResult[];
 }
 
-export function runProviders(
-  selectedChecks: number[]
-): ProviderResponse {
+export function runProviderChecks(
+  checks: Array<{ id: number | string; name: string }>
+): ProviderCheckResponse {
+  const startedAt = new Date();
 
-  const providers: ProviderResult[] = [];
+  const results: CheckResult[] = checks.map((check) => ({
+    checkId: String(check.id),
+    checkName: check.name,
+    provider: "Internal",
+    status: "PASSED",
+    score: 100,
+    message: "Check passed",
+    evidence: [],
+    startedAt,
+    completedAt: new Date(),
+  }));
 
-  const results: VerificationResult[] = [];
-
-  selectedChecks.forEach((checkId) => {
-
-    providers.push({
-
-      providerName: `Provider ${checkId}`,
-
+  const providers: ProviderResult[] = [
+    {
+      providerName: "Internal",
       status: "Completed",
-
-      confidence: 98,
-
-      responseTime: Math.floor(
-        Math.random() * 800 + 200
-      ),
-
-      findings: "Verification successful",
-
-    });
-
-    results.push({
-
-      checkId,
-
-      checkName: `Verification Check ${checkId}`,
-
-      status: "Passed",
-
-        score: 98,
-
-      message: "Verification completed successfully",
-
-    });
-
-  });
+      confidence: 100,
+      responseTime: 0,
+      findings: `${results.length} verification check(s) processed successfully.`,
+    },
+  ];
 
   return {
-
     providers,
-
     results,
-
   };
-
 }

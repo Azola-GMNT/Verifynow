@@ -1,4 +1,7 @@
 import { VerificationStatus } from "@/types/verification/enums";
+import { CheckResult } from "@/types/check";
+
+export type VerificationResult = CheckResult;
 
 export type RiskLevel =
   | "Low"
@@ -29,18 +32,6 @@ export interface VerificationSubject {
   idNumber?: string;
 
   passportNumber?: string;
-}
-
-export interface VerificationResult {
-  checkId: number;
-
-  checkName: string;
-
-  status: "Passed" | "Failed" | "Review";
-
-  score: number;
-
-  message: string;
 }
 
 export interface ProviderResult {
@@ -78,9 +69,21 @@ export interface VerificationCase {
 
   subject: VerificationSubject;
 
+  /*
+   * Module IDs are strings:
+   * identity
+   * company
+   * criminal
+   * employment
+   * education
+   * financial
+   * government
+   * mining
+   * property
+   */
   selectedChecks: number[];
 
-  completedChecks: number[];
+  completedChecks: string[];
 
   status: VerificationStatus;
 
@@ -90,7 +93,11 @@ export interface VerificationCase {
 
   providers: ProviderResult[];
 
-  results: VerificationResult[];
+  /*
+   * Individual check results produced by
+   * the verification modules.
+   */
+  results: CheckResult[];
 
   createdBy: string;
 

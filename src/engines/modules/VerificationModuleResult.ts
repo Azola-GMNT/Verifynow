@@ -1,15 +1,10 @@
-import { VerificationResult } from "@/types/verification";
+import { CheckResult } from "@/types/check";
 
 export interface VerificationModuleResult {
   moduleId: string;
-
   moduleName: string;
-
   startedAt: Date;
-
   completedAt: Date;
-
   successful: boolean;
-
-  results: VerificationResult[];
+  results: CheckResult[];
 }

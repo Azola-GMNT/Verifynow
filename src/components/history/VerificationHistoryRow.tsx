@@ -41,13 +41,13 @@ export default function VerificationHistoryRow({
       </td>
 
       <td>
-  {verification.risk.confidenceScore ?? "--"}%
+  {verification.risk?.confidenceScore ?? "--"}%
 </td>
 
 <td>
-  {new Date(
-    verification.timeline.createdAt
-  ).toLocaleDateString()}
+  {verification.timeline?.createdAt
+  ? new Date(verification.timeline.createdAt).toLocaleDateString()
+  : "--"}
 </td>
 
       <td>

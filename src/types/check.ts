@@ -5,7 +5,8 @@ export type CheckStatus =
   | "PASSED"
   | "FAILED"
   | "WARNING"
-  | "ERROR";
+  | "ERROR"
+  | "REVIEW";
 
 export interface EvidenceItem {
   title: string;
@@ -13,19 +14,13 @@ export interface EvidenceItem {
 }
 
 export interface CheckResult {
+  checkId: string | number;
   checkName: string;
-
   provider: string;
-
   status: CheckStatus;
-
   score: number;
-
   message: string;
-
   evidence: EvidenceItem[];
-
   startedAt: Date;
-
   completedAt: Date;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import ReviewSummaryCard from "./review/ReviewSummaryCard";
 import StepIndicator from "./StepIndicator";
@@ -17,8 +17,11 @@ import { useVerification } from "@/context/VerificationContext";
 import { VerificationCase } from "@/types/verification";
 import { VerificationStatus } from "@/types/verification/enums";
 
+import verificationChecks from "@/data/verificationChecks";
+
 export default function VerificationWizard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const { create } = useVerification();
 
@@ -32,26 +35,41 @@ export default function VerificationWizard() {
 
   const [subjectFound, setSubjectFound] = useState(false);
 
-const [selectedChecks, setSelectedChecks] = useState<number[]>([]);
+  /*
+   * Read checks passed from a module page.
+   *
+   * Example:
+   * /verifications/new?checks=id-number,passport,face-match
+   */
+  const moduleChecks = searchParams.get("checks");
 
-  const [verificationId] = useState(() => {
-  const now = new Date();
+  const initialSelectedChecks = moduleChecks
+  ? verificationChecks
+      .filter((check) =>
+        moduleChecks.split(",").includes(check.code)
+      )
+      .map((check) => check.id)
+  : [];
 
-  const date =
-    now.getFullYear().toString() +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    String(now.getDate()).padStart(2, "0");
-
-  const random = Math.floor(
-    Math.random() * 900000 + 100000
+  const [selectedChecks, setSelectedChecks] = useState<number[]>(
+    initialSelectedChecks
   );
 
-  return `VRF-${date}-${random}`;
-});
-  
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+  const [verificationId] = useState(() => {
+    const now = new Date();
 
+    const date =
+      now.getFullYear().toString() +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      String(now.getDate()).padStart(2, "0");
+
+    const random = Math.floor(Math.random() * 900000 + 100000);
+
+    return `VRF-${date}-${random}`;
+  });
+
+  return (
+    <div>
       <StepIndicator currentStep={step} />
 
       {/* STEP 1 */}
@@ -124,83 +142,79 @@ const [selectedChecks, setSelectedChecks] = useState<number[]>([]);
           />
 
           <WizardFooter
-  nextLabel="Run Verification"
-  onBack={() => setStep(3)}
-  onNext={async () => {
+            nextLabel="Run Verification"
+            onBack={() => setStep(3)}
+            onNext={async () => {
+              const verification: VerificationCase = {
+                verificationId,
 
-const verification: VerificationCase = {
+                status: VerificationStatus.Queued,
 
-  verificationId,
+                subject: {
+                  subjectType: subjectType!,
+                  displayName: "",
+                  country: selectedCountry,
 
-  status: VerificationStatus.Queued,
+                  fullName: undefined,
+                  companyName: undefined,
+                  registrationNumber: undefined,
+                  idNumber: undefined,
+                  passportNumber: undefined,
+                },
 
-  subject: {
-    subjectType: subjectType!,
-    displayName: "",
-    country: selectedCountry,
+                selectedChecks,
 
-    fullName: undefined,
-    companyName: undefined,
-    registrationNumber: undefined,
-    idNumber: undefined,
-    passportNumber: undefined,
-  },
+                completedChecks: [],
 
-  selectedChecks,
+                providers: [],
 
-  completedChecks: [],
+                results: [],
 
-  providers: [],
+                timeline: {
+                  createdAt: new Date().toISOString(),
+                },
 
-  results: [],
+                risk: {
+                  confidenceScore: undefined,
+                  recommendation: undefined,
+                  riskLevel: "Unknown",
+                },
 
-  timeline: {
-    createdAt: new Date().toISOString(),
-  },
+                createdBy: "Current User",
 
-  risk: {
-    confidenceScore: undefined,
-    recommendation: undefined,
-    riskLevel: "Unknown",
-  },
+                reportGenerated: false,
 
-  createdBy: "Current User",
+                notes: "",
+              };
 
-  reportGenerated: false,
+              await verificationService.startVerification(verification);
 
-  notes: "",
-
-};
-
-await verificationService.startVerification(verification);
-
-setStep(5);
-}}
-/>
+              setStep(5);
+            }}
+          />
         </>
-        )}
+      )}
 
-        {/* STEP 5 */}
+      {/* STEP 5 */}
 
-{step === 5 && (
-  <VerificationProcessing
-    verificationId={verificationId}
-    selectedChecks={selectedChecks}
-    onCompleted={() => setStep(6)}
-/>
-)}
+      {step === 5 && (
+        <VerificationProcessing
+          verificationId={verificationId}
+          selectedChecks={selectedChecks}
+          onCompleted={() => setStep(6)}
+        />
+      )}
 
-{/* STEP 6 */}
+      {/* STEP 6 */}
 
-{step === 6 && (
-  <VerificationResults
-    verificationId={verificationId}
-    subjectType={subjectType!}
-    country={selectedCountry}
-    selectedChecks={selectedChecks}
-  />
-)}
-
+      {step === 6 && (
+        <VerificationResults
+          verificationId={verificationId}
+          subjectType={subjectType!}
+          country={selectedCountry}
+          selectedChecks={selectedChecks}
+        />
+      )}
     </div>
   );
 }

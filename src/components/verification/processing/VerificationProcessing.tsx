@@ -10,7 +10,7 @@ import VerificationChecksProgress from "./VerificationChecksProgress";
 
 import { useVerification } from "@/context/VerificationContext";
 
-import { runProviders } from "@/engines/providerEngine";
+import { runProviderChecks } from "@/engines/providerEngine";
 import { calculateRisk } from "@/engines/riskEngine";
 
 import { VerificationStatus } from "@/types/verification/enums";
@@ -36,7 +36,8 @@ export default function VerificationProcessing({
     [selectedChecks]
   );
 
-  const [completedChecks, setCompletedChecks] = useState<number[]>([]);
+  const [completedChecks, setCompletedChecks] =
+    useState<number[]>([]);
 
   const [status, setStatus] = useState<
     "Queued" | "Running" | "Completed"
@@ -45,65 +46,64 @@ export default function VerificationProcessing({
   useEffect(() => {
     if (checks.length === 0) return;
 
+    const now = new Date().toISOString();
+
     setStatus("Running");
 
     update(verificationId, {
       status: VerificationStatus.Running,
-
       timeline: {
-        createdAt: new Date().toISOString(),
-        startedAt: new Date().toISOString(),
+        createdAt: now,
+        startedAt: now,
       },
     });
 
     let current = 0;
+    let completed: number[] = [];
 
     const timer = setInterval(() => {
       const check = checks[current];
 
+      if (!check) {
+        clearInterval(timer);
+        return;
+      }
+
       current++;
 
-      setCompletedChecks((previous) => [
-        ...previous,
-        check.id,
-      ]);
+      completed = [...completed, check.id];
+
+      setCompletedChecks(completed);
 
       update(verificationId, {
-        completedChecks: [
-          ...completedChecks,
-          check.id,
-        ],
+        completedChecks: completed,
       });
 
       if (current >= checks.length) {
         clearInterval(timer);
 
-        const providerResponse =
-          runProviders(selectedChecks);
+       const providerResponse =
+  runProviderChecks(checks);
 
         const risk =
           calculateRisk(providerResponse.results);
 
-        const now = new Date().toISOString();
+        const completedAt = new Date().toISOString();
 
-setStatus("Completed");
+        setStatus("Completed");
 
-update(verificationId, {
-  status: VerificationStatus.Completed,
-
-  providers: providerResponse.providers,
-
-  results: providerResponse.results,
-
-  risk,
-
-  timeline: {
-    createdAt: now,
-    startedAt: now,
-    completedAt: now,
-    durationSeconds: checks.length * 1.2,
-  },
-});
+        update(verificationId, {
+          status: VerificationStatus.Completed,
+          providers: providerResponse.providers,
+          results: providerResponse.results,
+          risk,
+          timeline: {
+            createdAt: now,
+            startedAt: now,
+            completedAt,
+            durationSeconds: checks.length * 1.2,
+          },
+        });
 
         setTimeout(() => {
           onCompleted();
@@ -111,45 +111,41 @@ update(verificationId, {
       }
     }, 1200);
 
-    return () => clearInterval(timer);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [
+    checks,
+    selectedChecks,
+    verificationId,
+    update,
+    onCompleted,
+  ]);
 
   const progress =
     checks.length === 0
       ? 0
       : Math.round(
-          (completedChecks.length /
-            checks.length) *
-            100
+          (completedChecks.length / checks.length) * 100
         );
 
   return (
-    <div className="space-y-8 rounded-2xl border border-slate-200 bg-white p-8">
-
-      <div className="flex items-center justify-between">
-
+    <div className="space-y-6">
+      <div className="flex items-start justify-between">
         <div>
-
-          <h2 className="text-3xl font-bold">
+          <h2 className="text-2xl font-bold text-slate-900">
             Running Verification
           </h2>
 
           <p className="mt-2 text-slate-500">
             Please wait while we process your verification request.
           </p>
-
         </div>
 
-        <VerificationStatusBadge
-          status={status}
-        />
-
+        <VerificationStatusBadge status={status} />
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
-
         <div className="text-sm text-slate-500">
           Verification ID
         </div>
@@ -157,12 +153,9 @@ update(verificationId, {
         <div className="mt-1 text-xl font-bold tracking-wide">
           {verificationId}
         </div>
-
       </div>
 
-      <VerificationProgress
-        progress={progress}
-      />
+      <VerificationProgress progress={progress} />
 
       <VerificationChecksProgress
         checks={checks.map((c) => c.name)}
@@ -172,7 +165,6 @@ update(verificationId, {
       <div className="rounded-xl bg-orange-50 p-4 text-sm text-slate-600">
         Please don't close this page while verification is running.
       </div>
-
     </div>
   );
 }

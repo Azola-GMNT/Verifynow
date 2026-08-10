@@ -1,4 +1,4 @@
-import { BaseVerificationCheck } from "./BaseVerificationCheck";
+import { BaseVerificationCheck } from "@/engines/checks/BaseVerificationCheck";
 import { VerificationCase } from "@/types/verification";
 import { CheckResult } from "@/types/check";
 

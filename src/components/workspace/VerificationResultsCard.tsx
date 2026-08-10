@@ -63,10 +63,14 @@ function ResultRow({
   result: VerificationResult;
 }) {
   const colours = {
-    Passed: "bg-green-100 text-green-700",
-    Failed: "bg-red-100 text-red-700",
-    Review: "bg-yellow-100 text-yellow-700",
-  };
+  PASSED: "bg-green-100 text-green-700",
+  FAILED: "bg-red-100 text-red-700",
+  WARNING: "bg-yellow-100 text-yellow-700",
+  ERROR: "bg-red-100 text-red-700",
+  PENDING: "bg-slate-100 text-slate-700",
+  PENDING_PROVIDER: "bg-yellow-100 text-yellow-700",
+  RUNNING: "bg-blue-100 text-blue-700",
+};
 
   return (
     <div className="rounded-xl border border-slate-200 p-5">
