@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/browser";
 import { userRepository } from "@/repositories/user.repository";
+import { onboardingService } from "@/services/onboarding.service";
 
 export class AuthService {
   private supabase = createClient();
@@ -30,7 +31,22 @@ export class AuthService {
       return null;
     }
 
-    return await userRepository.getByAuthId(authUser.id);
+    // Check whether the application user already exists
+    const existingUser = await userRepository.getByAuthId(
+      authUser.id
+    );
+
+    // If the Supabase user exists but the application
+    // user does not, initialise the application user.
+    if (!existingUser) {
+      return await onboardingService.initialiseUser({
+        id: authUser.id,
+        email: authUser.email,
+        user_metadata: authUser.user_metadata,
+      });
+    }
+
+    return existingUser;
   }
 
   async getSession() {
