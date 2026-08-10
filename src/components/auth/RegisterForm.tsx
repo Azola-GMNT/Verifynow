@@ -122,10 +122,13 @@ const { data, error } = await supabase.auth.signUp({
 setLoading(false);
 
 if (error) {
-  alert(error.message);
+  console.error("SUPABASE REGISTRATION ERROR:", error);
+  alert(`Registration failed: ${error.message}`);
+  setLoading(false);
   return;
 }
 
+console.log("SUPABASE REGISTRATION SUCCESS:", data);
 router.push("/verify-email");
 
   // Supabase comes next...

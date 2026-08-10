@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { supabase } from "@/lib/supabase";
+import { authService } from "@/services/auth.service";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState("");
 
   async function handleLogin(
@@ -27,7 +29,7 @@ export default function LoginForm() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -39,8 +41,10 @@ export default function LoginForm() {
     }
 
     // Login successful
-    router.push("/dashboard");
-    router.refresh();
+await authService.getCurrentUser();
+
+router.push("/dashboard");
+router.refresh();
   }
 
   return (
