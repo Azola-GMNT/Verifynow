@@ -22,6 +22,8 @@ export class EmploymentDatesCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Employer",

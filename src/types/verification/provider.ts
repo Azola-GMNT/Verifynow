@@ -1,13 +1,7 @@
 export interface ProviderResult {
-
   providerName: string;
-
-  status: string;
-
-  confidence?: number;
-
-  responseTime?: number;
-
-  findings?: string;
-
+  status: "Completed" | "Failed";
+  confidence: number;
+  responseTime: number;
+  findings: string;
 }

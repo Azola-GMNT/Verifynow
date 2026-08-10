@@ -17,6 +17,8 @@ export class SalaryVerificationCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Payroll",

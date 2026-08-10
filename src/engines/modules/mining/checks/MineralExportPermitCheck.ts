@@ -22,6 +22,8 @@ export class MineralExportPermitCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Mining Authority",

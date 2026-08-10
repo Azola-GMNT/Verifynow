@@ -18,6 +18,8 @@ export class FaceMatchCheck extends BaseVerificationCheck {
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "VerifyNow",

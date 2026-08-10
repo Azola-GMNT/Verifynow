@@ -21,6 +21,8 @@ export class CriminalRecordCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "SAPS",

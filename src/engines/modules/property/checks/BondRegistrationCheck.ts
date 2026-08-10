@@ -22,6 +22,8 @@ export class BondRegistrationCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Deeds Office",

@@ -22,6 +22,8 @@ export class FireAssayReportCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Accredited Laboratory",

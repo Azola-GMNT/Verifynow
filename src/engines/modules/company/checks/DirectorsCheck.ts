@@ -20,6 +20,8 @@ export class DirectorsCheck extends BaseCompanyCheck {
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "CIPC",

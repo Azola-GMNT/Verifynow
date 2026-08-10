@@ -20,6 +20,8 @@ export class BEECheck extends BaseCompanyCheck {
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "BEE Registry",

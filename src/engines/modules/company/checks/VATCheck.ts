@@ -20,6 +20,8 @@ export class VATCheck extends BaseCompanyCheck {
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "SARS",

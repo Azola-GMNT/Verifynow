@@ -21,6 +21,8 @@ export class SAPSCaseCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "SAPS",

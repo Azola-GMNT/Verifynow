@@ -22,6 +22,8 @@ export class BankStatementCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Open Banking",

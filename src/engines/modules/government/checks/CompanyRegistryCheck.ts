@@ -22,6 +22,8 @@ export class CompanyRegistryCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "CIPC",

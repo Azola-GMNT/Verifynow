@@ -22,6 +22,8 @@ export class RadiationLicenceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Nuclear Regulator",

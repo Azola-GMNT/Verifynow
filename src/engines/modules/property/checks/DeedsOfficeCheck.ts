@@ -22,6 +22,8 @@ export class DeedsOfficeCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "South African Deeds Office",

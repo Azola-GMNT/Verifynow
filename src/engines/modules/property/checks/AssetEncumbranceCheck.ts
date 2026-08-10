@@ -22,6 +22,8 @@ export class AssetEncumbranceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Asset Registry",

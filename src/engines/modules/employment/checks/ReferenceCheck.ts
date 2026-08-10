@@ -22,6 +22,8 @@ export class ReferenceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Reference Verification",

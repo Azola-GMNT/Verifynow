@@ -22,6 +22,8 @@ export class VehicleFinanceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Financial Institution",

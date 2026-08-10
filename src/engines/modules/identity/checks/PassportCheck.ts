@@ -24,6 +24,8 @@ export class PassportCheck extends BaseVerificationCheck {
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "VerifyNow",

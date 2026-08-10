@@ -22,6 +22,8 @@ export class AffordabilityCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "VerifyNow",

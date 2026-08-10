@@ -18,6 +18,8 @@ export class UniversityQualificationCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "University",

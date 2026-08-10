@@ -22,6 +22,8 @@ export class VesselOwnershipCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Maritime Authority",

@@ -22,6 +22,8 @@ export class ProfessionalLicenceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Professional Council",

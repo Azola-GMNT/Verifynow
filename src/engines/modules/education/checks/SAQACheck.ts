@@ -18,6 +18,8 @@ export class SAQACheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "SAQA",

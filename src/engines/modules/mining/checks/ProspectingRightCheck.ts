@@ -30,6 +30,8 @@ export class ProspectingRightCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider,

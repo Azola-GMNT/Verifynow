@@ -22,6 +22,8 @@ export class SocialLabourPlanCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Mining Authority",

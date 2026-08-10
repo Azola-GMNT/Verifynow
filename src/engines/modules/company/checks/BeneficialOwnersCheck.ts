@@ -21,6 +21,8 @@ export class BeneficialOwnersCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "CIPC",

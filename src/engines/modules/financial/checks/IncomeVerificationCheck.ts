@@ -22,6 +22,8 @@ export class IncomeVerificationCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Payroll",

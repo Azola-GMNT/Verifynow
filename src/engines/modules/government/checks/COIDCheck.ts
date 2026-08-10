@@ -22,6 +22,8 @@ export class COIDCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Compensation Fund",

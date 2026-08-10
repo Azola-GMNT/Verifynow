@@ -17,6 +17,8 @@ export class WantedPersonsCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "National Wanted Register",

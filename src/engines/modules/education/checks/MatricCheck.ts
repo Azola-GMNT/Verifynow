@@ -22,6 +22,8 @@ export class MatricCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Department of Education",

@@ -22,6 +22,8 @@ export class VotersRollCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "IEC",

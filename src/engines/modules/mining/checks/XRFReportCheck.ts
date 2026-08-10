@@ -22,6 +22,8 @@ export class XRFReportCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Analytical Laboratory",

@@ -18,6 +18,8 @@ export class AcademicMisconductCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Institution",

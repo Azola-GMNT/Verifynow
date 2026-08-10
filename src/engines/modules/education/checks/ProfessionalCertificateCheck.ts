@@ -18,6 +18,8 @@ export class ProfessionalCertificateCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Professional Body",

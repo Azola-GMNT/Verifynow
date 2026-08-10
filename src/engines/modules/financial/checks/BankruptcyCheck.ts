@@ -22,6 +22,8 @@ export class BankruptcyCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Court Registry",

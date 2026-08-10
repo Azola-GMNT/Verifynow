@@ -22,6 +22,8 @@ export class PropertyValuationCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Municipality",

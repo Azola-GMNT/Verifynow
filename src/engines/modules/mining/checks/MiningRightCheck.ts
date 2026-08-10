@@ -30,6 +30,8 @@ export class MiningRightCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider,

@@ -22,6 +22,8 @@ export class SmelterVerificationCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Responsible Minerals Initiative",

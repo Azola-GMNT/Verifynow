@@ -22,6 +22,8 @@ export class AccountOwnershipCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Bank",

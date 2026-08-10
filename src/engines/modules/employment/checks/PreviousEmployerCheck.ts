@@ -17,6 +17,8 @@ export class PreviousEmployerCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Employer",

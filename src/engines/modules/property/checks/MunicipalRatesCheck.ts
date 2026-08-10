@@ -22,6 +22,8 @@ export class MunicipalRatesCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Municipality",

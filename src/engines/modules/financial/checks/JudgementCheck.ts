@@ -22,6 +22,8 @@ export class JudgementCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Court Registry",

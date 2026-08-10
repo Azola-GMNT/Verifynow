@@ -22,6 +22,8 @@ export class PropertyOwnershipCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Deeds Office",

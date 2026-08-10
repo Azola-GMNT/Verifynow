@@ -83,7 +83,7 @@ export interface VerificationCase {
    */
   selectedChecks: number[];
 
-  completedChecks: string[];
+  completedChecks: number[];
 
   status: VerificationStatus;
 

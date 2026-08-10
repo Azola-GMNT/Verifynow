@@ -22,6 +22,8 @@ export class AircraftOwnershipCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Civil Aviation Authority",

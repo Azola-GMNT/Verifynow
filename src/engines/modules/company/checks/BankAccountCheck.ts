@@ -21,6 +21,8 @@ export class BankAccountCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Bank Verification",

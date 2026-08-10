@@ -22,6 +22,8 @@ export class UIFCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Department of Labour",

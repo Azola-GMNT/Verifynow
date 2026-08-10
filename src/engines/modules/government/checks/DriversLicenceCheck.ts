@@ -22,6 +22,8 @@ export class DriversLicenceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "RTMC",

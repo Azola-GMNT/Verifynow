@@ -18,6 +18,8 @@ export class NQFLevelCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "SAQA",

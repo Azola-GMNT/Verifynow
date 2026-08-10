@@ -30,6 +30,8 @@ export class DMRELicenceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider,

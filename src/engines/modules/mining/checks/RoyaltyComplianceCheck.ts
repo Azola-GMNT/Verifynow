@@ -22,6 +22,8 @@ export class RoyaltyComplianceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Revenue Authority",

@@ -22,6 +22,8 @@ export class DebtReviewCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "National Credit Regulator",

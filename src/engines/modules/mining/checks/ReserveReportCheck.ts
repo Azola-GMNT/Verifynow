@@ -22,6 +22,8 @@ export class ReserveReportCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Competent Person",

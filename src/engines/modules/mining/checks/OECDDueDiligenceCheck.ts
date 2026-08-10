@@ -22,6 +22,8 @@ export class OECDDueDiligenceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "OECD",

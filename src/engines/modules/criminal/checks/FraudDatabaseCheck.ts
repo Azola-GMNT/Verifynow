@@ -21,6 +21,8 @@ export class FraudDatabaseCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "VerifyNow Fraud Network",

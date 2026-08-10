@@ -70,6 +70,7 @@ function ResultRow({
   PENDING: "bg-slate-100 text-slate-700",
   PENDING_PROVIDER: "bg-yellow-100 text-yellow-700",
   RUNNING: "bg-blue-100 text-blue-700",
+  REVIEW: "bg-amber-100 text-amber-700",
 };
 
   return (

@@ -22,6 +22,8 @@ export class TaxComplianceCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "SARS",

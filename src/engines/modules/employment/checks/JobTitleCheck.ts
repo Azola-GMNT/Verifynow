@@ -16,6 +16,8 @@ export class JobTitleCheck extends BaseEmploymentCheck {
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Employer",

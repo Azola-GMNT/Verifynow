@@ -22,6 +22,8 @@ export class ICGLRCertificateCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "ICGLR",

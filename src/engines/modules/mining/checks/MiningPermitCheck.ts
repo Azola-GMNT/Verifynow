@@ -30,6 +30,8 @@ export class MiningPermitCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider,

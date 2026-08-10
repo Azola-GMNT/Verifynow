@@ -17,6 +17,8 @@ export class InterpolCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Interpol",

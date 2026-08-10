@@ -22,6 +22,8 @@ export class DisciplinaryRecordCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Employer",

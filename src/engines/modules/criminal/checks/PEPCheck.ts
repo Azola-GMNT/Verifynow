@@ -17,6 +17,8 @@ export class PEPCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "World Compliance",

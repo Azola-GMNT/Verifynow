@@ -22,6 +22,8 @@ export class NationalIDCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Department of Home Affairs",

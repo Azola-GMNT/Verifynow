@@ -22,6 +22,8 @@ export class MineHealthSafetyCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Mine Inspectorate",

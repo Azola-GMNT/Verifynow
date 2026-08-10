@@ -18,6 +18,8 @@ export class TranscriptCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Institution",

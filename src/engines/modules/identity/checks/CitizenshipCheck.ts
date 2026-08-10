@@ -20,6 +20,8 @@ export class CitizenshipCheck extends BaseVerificationCheck {
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "Home Affairs",

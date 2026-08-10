@@ -17,6 +17,8 @@ export class SanctionsCheck
 
     return {
 
+      checkId: this.id,
+
       checkName: this.name,
 
       provider: "OFAC",
