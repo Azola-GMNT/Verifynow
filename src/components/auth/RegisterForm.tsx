@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -43,9 +43,11 @@ export default function RegisterForm() {
   };
 
   const handleRegister = async (
-  e: React.FormEvent<HTMLFormElement>
+  e: FormEvent<HTMLFormElement>
 ) => {
   e.preventDefault();
+
+  console.log("REGISTER FORM SUBMITTED");
 
   const newErrors: Record<string, string> = {};
 
@@ -98,9 +100,15 @@ if (!formData.jobTitle.trim()) {
 
   setErrors(newErrors);
 
+  console.log("REGISTRATION VALIDATION:", newErrors);
+
   if (Object.keys(newErrors).length > 0) return;
 
   setLoading(true);
+
+  console.log("VALIDATION PASSED - CALLING SUPABASE");
+
+  console.log("CALLING SUPABASE SIGNUP");
 
 const { data, error } = await supabase.auth.signUp({
   email: formData.email,
