@@ -402,13 +402,13 @@ router.push("/verify-email");
          
           {/* Submit */}
 
-          <Button
-            type="submit"
-            disabled={loading}
-            className="h-12 w-full bg-[#BF5000] hover:bg-[#a84600]"
-          >
-            {loading ? "Creating Account..." : "Create My Account"}
-          </Button>
+          <button
+  type="submit"
+  disabled={loading}
+  className="h-12 w-full rounded-md bg-[#BF5000] px-4 py-3 font-semibold text-white hover:bg-[#a84600] disabled:opacity-50"
+>
+  {loading ? "Creating Account..." : "Create My Account"}
+</button>
 
           {/* Login */}
 
