@@ -72,7 +72,7 @@ export default function CompanyModulePage() {
 
         {/* Header */}
         <div>
-          <p className="text-sm font-medium text-blue-600">
+          <p className="text-sm font-medium text-[#BF5000]">
             Verification Module
           </p>
 
@@ -86,7 +86,7 @@ export default function CompanyModulePage() {
         </div>
 
         {/* Selection toolbar */}
-        <div className="mt-6 flex flex-col justify-between gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center">
+        <div className="mt-6 flex flex-col justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
           <div>
             <p className="text-sm font-medium text-slate-900">
               {selectedChecks.length} of {companyChecks.length} checks selected
@@ -101,7 +101,7 @@ export default function CompanyModulePage() {
             <button
               type="button"
               onClick={selectAll}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-[#BF5000] hover:bg-orange-50"
             >
               Select all
             </button>
@@ -109,7 +109,7 @@ export default function CompanyModulePage() {
             <button
               type="button"
               onClick={clearAll}
-              className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-[#BF5000] hover:bg-orange-50"
             >
               Clear
             </button>
@@ -126,18 +126,18 @@ export default function CompanyModulePage() {
                 key={check.id}
                 type="button"
                 onClick={() => toggleCheck(check.id)}
-                className={`rounded-xl border p-5 text-left transition ${
+                className={`rounded-2xl border p-5 text-left transition ${
                   selected
-                    ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
-                    : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-sm"
+                    ? "border-[#BF5000] bg-orange-50 ring-1 ring-[#BF5000]"
+                    : "border-slate-200 bg-white hover:border-[#BF5000] hover:shadow-sm"
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold ${
                       selected
-                        ? "bg-blue-600 text-white"
-                        : "bg-blue-50 text-blue-600"
+                        ? "bg-[#BF5000] text-white"
+                        : "bg-orange-50 text-[#BF5000]"
                     }`}
                   >
                     CO
@@ -146,7 +146,7 @@ export default function CompanyModulePage() {
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                       selected
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-orange-100 text-[#BF5000]"
                         : "bg-emerald-50 text-emerald-700"
                     }`}
                   >
@@ -162,8 +162,8 @@ export default function CompanyModulePage() {
                   {check.description}
                 </p>
 
-                <div className="mt-5 text-sm font-medium text-blue-600">
-                  {selected ? "Remove check" : "Select check"} →
+                <div className="mt-5 text-sm font-medium text-[#BF5000]">
+                  {selected ? "Remove check" : "Verify this"} →
                 </div>
               </button>
             );
@@ -171,7 +171,7 @@ export default function CompanyModulePage() {
         </div>
 
         {/* Start */}
-        <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-6">
+        <div className="mt-6 rounded-2xl border border-orange-100 bg-orange-50 p-6">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <h2 className="font-semibold text-slate-900">
@@ -191,7 +191,7 @@ export default function CompanyModulePage() {
               type="button"
               disabled={selectedChecks.length === 0}
               onClick={startVerification}
-              className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg bg-[#BF5000] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#A84400] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Start Verification
             </button>
