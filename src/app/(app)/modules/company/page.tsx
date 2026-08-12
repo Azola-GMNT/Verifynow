@@ -72,10 +72,7 @@ export default function CompanyModulePage() {
 
         {/* Header */}
         <div>
-          <p className="text-sm font-medium text-[#BF5000]">
-            Verification Module
-          </p>
-
+          
           <h1 className="mt-1 text-2xl font-semibold text-slate-900">
             Company Verification
           </h1>

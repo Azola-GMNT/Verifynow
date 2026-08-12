@@ -81,10 +81,7 @@ function startVerification() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <p className="text-sm font-medium text-blue-600">
-            Verification Module
-          </p>
-
+          
           <h1 className="mt-1 text-2xl font-semibold text-slate-900">
             Identity Verification
           </h1>
@@ -137,16 +134,16 @@ function startVerification() {
                 onClick={() => toggleCheck(check.id)}
                 className={`rounded-xl border p-5 text-left transition ${
                   selected
-                    ? "border-blue-500 bg-blue-50 ring-1 ring-blue-500"
-                    : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-sm"
+                    ? "border-[#BF5000] bg-orange-50 ring-1 ring-[#BF5000]"
+                    : "border-slate-200 bg-white hover:border-[#BF5000] hover:shadow-sm"
                 }`}
               >
                 <div className="flex items-start justify-between">
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold ${
                       selected
-                        ? "bg-blue-600 text-white"
-                        : "bg-blue-50 text-blue-600"
+                        ? "bg-[#BF5000] text-white"
+                        : "bg-blue-50 text-[#BF5000]"
                     }`}
                   >
                     ID
@@ -155,7 +152,7 @@ function startVerification() {
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                       selected
-                        ? "bg-blue-100 text-blue-700"
+                        ? "bg-orange-100 text-[#BF5000]"
                         : "bg-emerald-50 text-emerald-700"
                     }`}
                   >
@@ -171,7 +168,7 @@ function startVerification() {
                   {check.description}
                 </p>
 
-                <div className="mt-5 text-sm font-medium text-blue-600">
+                <div className="mt-5 text-sm font-medium text-[#BF5000]">
                   {selected ? "Remove check" : "Select check"} →
                 </div>
               </button>
@@ -180,7 +177,7 @@ function startVerification() {
         </div>
 
         {/* Start */}
-        <div className="rounded-xl border border-blue-100 bg-blue-50 p-6">
+        <div className="rounded-xl border border-orange-100 bg-orange-50 p-6">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div>
               <h2 className="font-semibold text-slate-900">
@@ -200,7 +197,7 @@ function startVerification() {
               type="button"
               disabled={selectedChecks.length === 0}
               onClick={startVerification}
-              className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg bg-[#BF5000] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-[#A84400] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Start Verification
             </button>
