@@ -51,8 +51,9 @@ export default function VerificationResults({
         checks={checks}
       />
 
-      <ResultsActions />
-
+      <ResultsActions
+  verificationId={verificationId}
+/>
       <WizardFooter
         backLabel="Back"
         nextLabel="Finish"

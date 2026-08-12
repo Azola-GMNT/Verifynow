@@ -187,7 +187,7 @@ export default function VerificationWizard() {
                 notes: "",
               };
 
-              await verificationService.startVerification(verification);
+              verificationService.startVerification(verification);
 
               setStep(5);
             }}
