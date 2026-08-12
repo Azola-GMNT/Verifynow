@@ -22,6 +22,9 @@ export default function ResultsActions({
   const [downloadingPdf, setDownloadingPdf] =
     useState(false);
 
+    const [downloadingWord, setDownloadingWord] =
+  useState(false);
+
   async function downloadPdf() {
     try {
       setDownloadingPdf(true);
@@ -70,6 +73,54 @@ export default function ResultsActions({
     }
   }
 
+async function downloadWord() {
+  try {
+    setDownloadingWord(true);
+
+    const response = await fetch(
+      `/api/reports/${verificationId}/word`
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "Unable to generate Word report"
+      );
+    }
+
+    const blob = await response.blob();
+
+    const url =
+      window.URL.createObjectURL(blob);
+
+    const link =
+      document.createElement("a");
+
+    link.href = url;
+
+    link.download =
+      `VerifyNow-${verificationId}.docx`;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error(
+      "Word download failed:",
+      error
+    );
+
+    alert(
+      "Unable to generate the Word verification report. Please try again."
+    );
+  } finally {
+    setDownloadingWord(false);
+  }
+}
+
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
 
@@ -111,12 +162,13 @@ export default function ResultsActions({
           </div>
         </button>
 
-        {/* Word */}
-        <button
-          type="button"
-          disabled
-          className="flex items-center justify-between rounded-xl border border-slate-300 px-5 py-4 opacity-60"
-        >
+       {/* Word */}
+<button
+  type="button"
+  onClick={downloadWord}
+  disabled={downloadingWord}
+  className="flex items-center justify-between rounded-xl border border-slate-300 px-5 py-4 transition hover:border-[#BF5000] hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60"
+>
           <div className="flex items-center gap-3">
 
             <div className="rounded-lg bg-blue-100 p-2">
