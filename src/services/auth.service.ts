@@ -1,6 +1,4 @@
 import { createClient } from "@/lib/supabase/browser";
-import { userRepository } from "@/repositories/user.repository";
-import { onboardingService } from "@/services/onboarding.service";
 
 export class AuthService {
   private supabase = createClient();
@@ -25,28 +23,42 @@ export class AuthService {
   }
 
   async getCurrentUser() {
-    const authUser = await this.getSupabaseUser();
+    console.log(
+      "AUTH SERVICE: getCurrentUser() STARTED"
+    );
 
-    if (!authUser) {
+    const response = await fetch("/api/auth/me", {
+      method: "GET",
+      credentials: "include",
+    });
+
+    console.log(
+      "AUTH SERVICE: /api/auth/me STATUS:",
+      response.status
+    );
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => null);
+
+      console.error(
+        "AUTH SERVICE: /api/auth/me ERROR:",
+        errorData
+      );
+
       return null;
     }
 
-    // Check whether the application user already exists
-    const existingUser = await userRepository.getByAuthId(
-      authUser.id
+    const applicationUser =
+      await response.json();
+
+    console.log(
+      "AUTH SERVICE: APPLICATION USER:",
+      applicationUser
     );
 
-    // If the Supabase user exists but the application
-    // user does not, initialise the application user.
-    if (!existingUser) {
-      return await onboardingService.initialiseUser({
-        id: authUser.id,
-        email: authUser.email,
-        user_metadata: authUser.user_metadata,
-      });
-    }
-
-    return existingUser;
+    return applicationUser;
   }
 
   async getSession() {
@@ -58,4 +70,5 @@ export class AuthService {
   }
 }
 
-export const authService = new AuthService();
+export const authService =
+  new AuthService();

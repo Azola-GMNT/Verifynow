@@ -23,16 +23,30 @@ export default function ForgotPasswordForm() {
     setLoading(true);
     setError("");
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+    const { error } =
+      await supabase.auth.resetPasswordForEmail(
+        email,
+        {
+          redirectTo:
+  `${window.location.origin}/auth/callback?next=/reset-password`,
+        }
+      );
 
     setLoading(false);
 
     if (error) {
+      console.error(
+        "FORGOT PASSWORD ERROR:",
+        error
+      );
+
       setError(error.message);
       return;
     }
+
+    console.log(
+      "PASSWORD RESET EMAIL SENT"
+    );
 
     setSuccess(true);
   }
@@ -42,7 +56,6 @@ export default function ForgotPasswordForm() {
       <CardContent className="p-10">
 
         {success ? (
-
           <div className="space-y-6 text-center">
 
             <h3 className="text-2xl font-bold text-slate-900">
@@ -50,7 +63,8 @@ export default function ForgotPasswordForm() {
             </h3>
 
             <p className="text-slate-600">
-              We've sent a password reset link to your email address.
+              We've sent a password reset link to
+              your email address.
             </p>
 
             <Link
@@ -61,9 +75,7 @@ export default function ForgotPasswordForm() {
             </Link>
 
           </div>
-
         ) : (
-
           <form
             onSubmit={handleReset}
             className="space-y-5"
@@ -73,11 +85,14 @@ export default function ForgotPasswordForm() {
               type="email"
               placeholder="Business Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) =>
+                setEmail(e.target.value)
+              }
+              disabled={loading}
             />
 
             {error && (
-              <p className="text-sm text-red-500">
+              <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
                 {error}
               </p>
             )}
@@ -87,11 +102,12 @@ export default function ForgotPasswordForm() {
               disabled={loading}
               className="w-full h-12 bg-[#BF5000] hover:bg-[#a84600]"
             >
-              {loading ? "Sending..." : "Send Reset Link"}
+              {loading
+                ? "Sending..."
+                : "Send Reset Link"}
             </Button>
 
           </form>
-
         )}
 
       </CardContent>

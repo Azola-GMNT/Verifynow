@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { supabase } from "@/lib/supabase";
 import { authService } from "@/services/auth.service";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,9 +15,7 @@ export default function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
-
   const [error, setError] = useState("");
 
   async function handleLogin(
@@ -29,22 +26,25 @@ export default function LoginForm() {
     setLoading(true);
     setError("");
 
-        const { error } = await supabase.auth.signInWithPassword({
+    const { error } = await authService.signIn(
       email,
-      password,
-    });
+      password
+    );
 
     if (error) {
+      console.error("LOGIN ERROR:", error);
+
+      setError(
+        error.message || "Incorrect email or password."
+      );
+
       setLoading(false);
-      setError("Incorrect email or password.");
       return;
     }
 
-    // Login successful
-await authService.getCurrentUser();
-
-router.push("/dashboard");
-router.refresh();
+    // Authentication successful
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -61,6 +61,7 @@ router.refresh();
             onChange={(e) =>
               setEmail(e.target.value)
             }
+            disabled={loading}
           />
 
           <Input
@@ -70,10 +71,11 @@ router.refresh();
             onChange={(e) =>
               setPassword(e.target.value)
             }
+            disabled={loading}
           />
 
           {error && (
-            <p className="text-sm text-red-500">
+            <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600">
               {error}
             </p>
           )}
@@ -83,8 +85,8 @@ router.refresh();
               <input
                 type="checkbox"
                 className="accent-[#BF5000]"
+                disabled={loading}
               />
-
               Remember Me
             </label>
 
@@ -101,9 +103,7 @@ router.refresh();
             disabled={loading}
             className="h-12 w-full bg-[#BF5000] hover:bg-[#a84600]"
           >
-            {loading
-              ? "Logging In..."
-              : "Login"}
+            {loading ? "Logging In..." : "Login"}
           </Button>
 
           <p className="text-center text-sm text-slate-600">
