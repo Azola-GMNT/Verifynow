@@ -3,101 +3,167 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   ReactNode,
 } from "react";
 
 import { VerificationCase } from "@/types/verification";
-import { verificationService } from "@/services/verificationService";
 
 interface VerificationContextType {
   verifications: VerificationCase[];
 
-  create: (verification: VerificationCase) => void;
+  create: (
+    verification: VerificationCase
+  ) => Promise<void>;
 
   update: (
     verificationId: string,
     updates: Partial<VerificationCase>
-  ) => void;
+  ) => Promise<void>;
 
-  remove: (verificationId: string) => void;
+  remove: (
+    verificationId: string
+  ) => Promise<void>;
 
-  refresh: () => void;
+  refresh: () => Promise<void>;
 }
 
 const VerificationContext =
-  createContext<VerificationContextType | null>(null);
+  createContext<VerificationContextType | null>(
+    null
+  );
 
 export function VerificationProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [, forceRefresh] = useState(0);
+  const [verifications, setVerifications] =
+    useState<VerificationCase[]>([]);
 
-  const refresh = () => {
-    forceRefresh((value) => value + 1);
+  const refresh = async () => {
+    try {
+      const response = await fetch(
+        "/api/verifications"
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to load verifications"
+        );
+      }
+
+      const data =
+        await response.json();
+
+      setVerifications(data);
+    } catch (error) {
+      console.error(
+        "Failed to load verification cases:",
+        error
+      );
+    }
   };
 
-  const create = (
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  const create = async (
     verification: VerificationCase
   ) => {
-    verificationService.createVerificationCase(
-      verification
+    const response = await fetch(
+      "/api/verifications",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          verification
+        ),
+      }
     );
 
-    refresh();
+    if (!response.ok) {
+      throw new Error(
+        "Failed to create verification"
+      );
+    }
+
+    await refresh();
   };
 
-  const update = (
+  const update = async (
     verificationId: string,
     updates: Partial<VerificationCase>
   ) => {
-    verificationService.updateVerificationCase(
-      verificationId,
-      updates
+    const response = await fetch(
+      `/api/verifications/${verificationId}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          updates
+        ),
+      }
     );
 
-    refresh();
+    if (!response.ok) {
+      throw new Error(
+        "Failed to update verification"
+      );
+    }
+
+    await refresh();
   };
 
-  const remove = (
+  const remove = async (
     verificationId: string
   ) => {
-    verificationService.deleteVerificationCase(
-      verificationId
+    const response = await fetch(
+      `/api/verifications/${verificationId}`,
+      {
+        method: "DELETE",
+      }
     );
 
-    refresh();
+    if (!response.ok) {
+      throw new Error(
+        "Failed to delete verification"
+      );
+    }
+
+    await refresh();
   };
 
   const value = useMemo(
     () => ({
-      verifications:
-        verificationService.getAllVerificationCases(),
-
+      verifications,
       create,
-
       update,
-
       remove,
-
       refresh,
     }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [forceRefresh]
+    [verifications]
   );
 
   return (
-    <VerificationContext.Provider value={value}>
+    <VerificationContext.Provider
+      value={value}
+    >
       {children}
     </VerificationContext.Provider>
   );
 }
 
 export function useVerification() {
-  const context = useContext(VerificationContext);
+  const context =
+    useContext(VerificationContext);
 
   if (!context) {
     throw new Error(

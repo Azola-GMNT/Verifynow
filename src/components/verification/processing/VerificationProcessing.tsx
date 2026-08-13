@@ -43,6 +43,42 @@ export default function VerificationProcessing({
     "Queued" | "Running" | "Completed"
   >("Queued");
 
+  /**
+   * Create notification when verification is completed.
+   */
+  async function createCompletionNotification() {
+    try {
+      const response = await fetch(
+        "/api/notifications/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            title: "Verification completed",
+            message: `Your verification request ${verificationId} has been completed successfully.`,
+            type: "verification",
+            link: `/verifications/${verificationId}`,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        console.error(
+          "Failed to create completion notification:",
+          await response.text()
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Failed to create completion notification:",
+        error
+      );
+    }
+  }
+
   useEffect(() => {
     if (checks.length === 0) return;
 
@@ -82,13 +118,14 @@ export default function VerificationProcessing({
       if (current >= checks.length) {
         clearInterval(timer);
 
-       const providerResponse =
-  runProviderChecks(checks);
+        const providerResponse =
+          runProviderChecks(checks);
 
         const risk =
           calculateRisk(providerResponse.results);
 
-        const completedAt = new Date().toISOString();
+        const completedAt =
+          new Date().toISOString();
 
         setStatus("Completed");
 
@@ -104,6 +141,9 @@ export default function VerificationProcessing({
             durationSeconds: checks.length * 1.2,
           },
         });
+
+        // Create notification after successful completion.
+        void createCompletionNotification();
 
         setTimeout(() => {
           onCompleted();

@@ -8,15 +8,15 @@ datasource db {
 }
 
 model Company {
-  id                 String   @id @default(cuid())
+  id                 String             @id @default(cuid())
   name               String
   registrationNumber String?
   taxNumber          String?
   industry           String
   country            String
   website            String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
   addressLine1       String?
   addressLine2       String?
   city               String?
@@ -28,27 +28,30 @@ model Company {
   supportEmail       String?
   supportPhone       String?
   users              User[]
+  verificationCases  VerificationCase[]
 }
 
 model User {
-  id            String                @id @default(cuid())
-  firstName     String
-  lastName      String
-  email         String                @unique
-  phone         String?
-  jobTitle      String?
-  emailVerified Boolean               @default(false)
-  isActive      Boolean               @default(true)
-  role          UserRole              @default(USER)
-  companyId     String?
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
-  authId        String?               @unique
-  avatarUrl     String?
-  notifications NotificationSettings?
-  security      SecuritySettings?
-  company       Company?              @relation(fields: [companyId], references: [id])
-  preferences   UserPreferences?
+  id                String                @id @default(cuid())
+  firstName         String
+  lastName          String
+  email             String                @unique
+  phone             String?
+  jobTitle          String?
+  emailVerified     Boolean               @default(false)
+  isActive          Boolean               @default(true)
+  role              UserRole              @default(USER)
+  companyId         String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  authId            String?               @unique
+  avatarUrl         String?
+  notifications     NotificationSettings?
+  notificationItems Notification[]
+  security          SecuritySettings?
+  company           Company?              @relation(fields: [companyId], references: [id])
+  preferences       UserPreferences?
+  verificationCases VerificationCase[]
 }
 
 model UserPreferences {
@@ -83,6 +86,23 @@ model SecuritySettings {
   user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("system")
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
 model NotificationSettings {
   id                 String   @id @default(cuid())
   userId             String   @unique
@@ -96,6 +116,166 @@ model NotificationSettings {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationCase {
+  id                String    @id @default(cuid())
+  verificationId    String    @unique
+  companyId         String?
+  createdByUserId   String?
+  subjectType       String
+  subjectName       String?
+  subjectIdentifier String?
+  status            String    @default("Draft")
+  recommendation    String?
+  riskLevel         String?
+  riskScore         Float?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  startedAt         DateTime?
+  completedAt       DateTime?
+  durationSeconds   Float?
+
+  company       Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdByUser User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  subject   VerificationSubject?
+  checks    VerificationCheck[]
+  results   VerificationResult[]
+  providers VerificationProviderResult[]
+  timeline  VerificationTimelineEvent[]
+  reports   VerificationReport[]
+  auditLogs VerificationAuditLog[]
+
+  @@index([companyId])
+  @@index([createdByUserId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model VerificationSubject {
+  id                 String    @id @default(cuid())
+  verificationCaseId String    @unique
+  subjectType        String
+  firstName          String?
+  lastName           String?
+  fullName           String?
+  identifier         String?
+  identifierType     String?
+  dateOfBirth        DateTime?
+  nationality        String?
+  country            String?
+  email              String?
+  phone              String?
+  companyName        String?
+  registrationNumber String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  verificationCase VerificationCase @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+
+  @@index([identifier])
+  @@index([subjectType])
+}
+
+model VerificationCheck {
+  id                 String    @id @default(cuid())
+  verificationCaseId String
+  checkKey           String
+  checkName          String
+  category           String?
+  status             String    @default("Queued")
+  provider           String?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  verificationCase VerificationCase     @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+  results          VerificationResult[]
+
+  @@unique([verificationCaseId, checkKey])
+  @@index([verificationCaseId])
+  @@index([status])
+}
+
+model VerificationResult {
+  id                  String    @id @default(cuid())
+  verificationCaseId  String
+  verificationCheckId String?
+  provider            String?
+  status              String
+  score               Float?
+  message             String?
+  evidence            Json?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  createdAt           DateTime  @default(now())
+
+  verificationCase  VerificationCase   @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+  verificationCheck VerificationCheck? @relation(fields: [verificationCheckId], references: [id], onDelete: SetNull)
+
+  @@index([verificationCaseId])
+  @@index([verificationCheckId])
+  @@index([status])
+}
+
+model VerificationProviderResult {
+  id                 String   @id @default(cuid())
+  verificationCaseId String
+  providerName       String
+  status             String
+  confidence         Float?
+  responseTime       Float?
+  findings           String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  verificationCase VerificationCase @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+
+  @@index([verificationCaseId])
+  @@index([providerName])
+}
+
+model VerificationTimelineEvent {
+  id                 String   @id @default(cuid())
+  verificationCaseId String
+  eventType          String
+  status             String?
+  message            String?
+  createdAt          DateTime @default(now())
+
+  verificationCase VerificationCase @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+
+  @@index([verificationCaseId])
+  @@index([createdAt])
+}
+
+model VerificationReport {
+  id                 String   @id @default(cuid())
+  verificationCaseId String
+  reportType         String
+  fileUrl            String?
+  generatedAt        DateTime @default(now())
+
+  verificationCase VerificationCase @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+
+  @@index([verificationCaseId])
+}
+
+model VerificationAuditLog {
+  id                 String   @id @default(cuid())
+  verificationCaseId String
+  userId             String?
+  action             String
+  details            Json?
+  createdAt          DateTime @default(now())
+
+  verificationCase VerificationCase @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+
+  @@index([verificationCaseId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 enum UserRole {

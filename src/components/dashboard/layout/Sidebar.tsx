@@ -1,15 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
 import { navigation } from "@/config/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { authService } from "@/services/auth.service";
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  // Hook must be declared here
   const { user } = useCurrentUser();
+
+  async function handleLogout() {
+    try {
+      await authService.signOut();
+      router.push("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  }
 
   return (
     <aside className="hidden w-80 border-r border-slate-200 bg-white lg:flex lg:flex-col">
@@ -67,6 +79,16 @@ export default function Sidebar() {
         <p className="text-sm text-slate-500">
           {user ? "Authenticated User" : ""}
         </p>
+
+        {/* Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-4 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-slate-700 transition hover:bg-orange-50 hover:text-[#BF5000]"
+        >
+          <LogOut className="h-5 w-5" />
+          <span className="font-medium">Logout</span>
+        </button>
       </div>
     </aside>
   );
