@@ -14,6 +14,7 @@ import {
   BarChart3,
   Settings,
   Users,
+  WalletCards,
   LucideIcon,
 } from "lucide-react";
 
@@ -101,6 +102,17 @@ export const navigation: NavigationSection[] = [
       },
     ],
   },
+
+  {
+  heading: "BILLING",
+  items: [
+    {
+      title: "Billing",
+      href: "/billing",
+      icon: WalletCards,
+    },
+  ],
+},
 
   {
     heading: "SYSTEM",

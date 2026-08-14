@@ -8,15 +8,15 @@ datasource db {
 }
 
 model Company {
-  id                 String             @id @default(cuid())
+  id                 String              @id @default(cuid())
   name               String
   registrationNumber String?
   taxNumber          String?
   industry           String
   country            String
   website            String?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
   addressLine1       String?
   addressLine2       String?
   city               String?
@@ -29,29 +29,35 @@ model Company {
   supportPhone       String?
   users              User[]
   verificationCases  VerificationCase[]
+  creditWallet       CreditWallet?
+  creditTransactions CreditTransaction[]
+  creditPurchases    CreditPurchase[]
+  verificationUsage  VerificationUsage[]
 }
 
 model User {
-  id                String                @id @default(cuid())
-  firstName         String
-  lastName          String
-  email             String                @unique
-  phone             String?
-  jobTitle          String?
-  emailVerified     Boolean               @default(false)
-  isActive          Boolean               @default(true)
-  role              UserRole              @default(USER)
-  companyId         String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  authId            String?               @unique
-  avatarUrl         String?
-  notifications     NotificationSettings?
-  notificationItems Notification[]
-  security          SecuritySettings?
-  company           Company?              @relation(fields: [companyId], references: [id])
-  preferences       UserPreferences?
-  verificationCases VerificationCase[]
+  id                 String                @id @default(cuid())
+  firstName          String
+  lastName           String
+  email              String                @unique
+  phone              String?
+  jobTitle           String?
+  emailVerified      Boolean               @default(false)
+  isActive           Boolean               @default(true)
+  role               UserRole              @default(USER)
+  companyId          String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  authId             String?               @unique
+  avatarUrl          String?
+  notifications      NotificationSettings?
+  notificationItems  Notification[]
+  security           SecuritySettings?
+  company            Company?              @relation(fields: [companyId], references: [id])
+  preferences        UserPreferences?
+  verificationCases  VerificationCase[]
+  creditTransactions CreditTransaction[]
+  creditPurchases    CreditPurchase[]
 }
 
 model UserPreferences {
@@ -139,13 +145,15 @@ model VerificationCase {
   company       Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdByUser User?    @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
 
-  subject   VerificationSubject?
-  checks    VerificationCheck[]
-  results   VerificationResult[]
-  providers VerificationProviderResult[]
-  timeline  VerificationTimelineEvent[]
-  reports   VerificationReport[]
-  auditLogs VerificationAuditLog[]
+  subject            VerificationSubject?
+  checks             VerificationCheck[]
+  results            VerificationResult[]
+  providers          VerificationProviderResult[]
+  timeline           VerificationTimelineEvent[]
+  reports            VerificationReport[]
+  auditLogs          VerificationAuditLog[]
+  creditTransactions CreditTransaction[]
+  verificationUsage  VerificationUsage[]
 
   @@index([companyId])
   @@index([createdByUserId])
@@ -191,8 +199,10 @@ model VerificationCheck {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  verificationCase VerificationCase     @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
-  results          VerificationResult[]
+  verificationCase   VerificationCase     @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
+  results            VerificationResult[]
+  creditTransactions CreditTransaction[]
+  usage              VerificationUsage?
 
   @@unique([verificationCaseId, checkKey])
   @@index([verificationCaseId])
@@ -282,4 +292,134 @@ enum UserRole {
   OWNER
   ADMIN
   USER
+}
+
+model CreditWallet {
+  id        String   @id @default(cuid())
+  companyId String   @unique
+  balance   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company      Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  transactions CreditTransaction[]
+
+  @@index([companyId])
+}
+
+model CreditTransaction {
+  id                  String   @id @default(cuid())
+  companyId           String
+  walletId            String
+  type                String
+  amount              Int
+  balanceBefore       Int
+  balanceAfter        Int
+  description         String?
+  reference           String?
+  verificationId      String?
+  verificationCheckId String?
+  createdByUserId     String?
+  metadata            Json?
+  createdAt           DateTime @default(now())
+
+  company           Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  wallet            CreditWallet       @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  verification      VerificationCase?  @relation(fields: [verificationId], references: [id], onDelete: SetNull)
+  verificationCheck VerificationCheck? @relation(fields: [verificationCheckId], references: [id], onDelete: SetNull)
+  createdByUser     User?              @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([walletId])
+  @@index([type])
+  @@index([verificationId])
+  @@index([verificationCheckId])
+  @@index([createdAt])
+}
+
+model VerificationPricing {
+  id          String   @id @default(cuid())
+  checkKey    String   @unique
+  checkName   String
+  category    String?
+  creditCost  Int
+  active      Boolean  @default(true)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  usage VerificationUsage[]
+
+  @@index([active])
+  @@index([category])
+}
+
+model CreditPackage {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  credits     Int
+  price       Decimal          @db.Decimal(12, 2)
+  currency    String           @default("ZAR")
+  active      Boolean          @default(true)
+  sortOrder   Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  purchases   CreditPurchase[]
+
+  @@index([active])
+  @@index([sortOrder])
+}
+
+model CreditPurchase {
+  id        String  @id @default(cuid())
+  companyId String
+  userId    String?
+  packageId String
+
+  credits  Int
+  amount   Decimal @db.Decimal(12, 2)
+  currency String  @default("ZAR")
+
+  status           String  @default("PENDING")
+  paymentGateway   String?
+  paymentReference String?
+
+  metadata Json?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  paidAt    DateTime?
+
+  company Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  package CreditPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+
+  @@unique([paymentGateway, paymentReference])
+  @@index([companyId])
+  @@index([userId])
+  @@index([packageId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model VerificationUsage {
+  id                  String   @id @default(cuid())
+  companyId           String
+  verificationId      String
+  verificationCheckId String
+  pricingId           String
+  creditsConsumed     Int
+  createdAt           DateTime @default(now())
+
+  company           Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  verification      VerificationCase    @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+  verificationCheck VerificationCheck   @relation(fields: [verificationCheckId], references: [id], onDelete: Cascade)
+  pricing           VerificationPricing @relation(fields: [pricingId], references: [id], onDelete: Restrict)
+
+  @@unique([verificationCheckId])
+  @@index([companyId])
+  @@index([verificationId])
+  @@index([pricingId])
+  @@index([createdAt])
 }
