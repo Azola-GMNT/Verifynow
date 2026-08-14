@@ -28,9 +28,9 @@ export async function GET(
     const { verificationId } = await params;
 
     const verification =
-      verificationRepository.getVerification(
-        verificationId
-      );
+  await verificationRepository.getVerification(
+    verificationId
+  );
 
     if (!verification) {
       return new Response(

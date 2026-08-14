@@ -24,9 +24,9 @@ export async function GET(
     const { verificationId } = await context.params;
 
     const verification =
-      verificationService.getVerificationCase(
-        verificationId
-      );
+  await verificationService.getVerificationCase(
+    verificationId
+  );
 
     if (!verification) {
       return NextResponse.json(
