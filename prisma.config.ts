@@ -4,7 +4,9 @@ import { defineConfig } from "prisma/config";
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL environment variable is missing.");
+  throw new Error(
+    "DATABASE_URL environment variable is missing."
+  );
 }
 
 export default defineConfig({
@@ -12,6 +14,7 @@ export default defineConfig({
 
   migrations: {
     path: "prisma/migrations",
+    seed: "tsx prisma/seed.ts",
   },
 
   datasource: {

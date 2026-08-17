@@ -1,91 +1,116 @@
 import { NextResponse } from "next/server";
 
-import { authService } from "@/services/auth.service";
-import { creditPurchaseService } from "@/services/creditPurchaseService";
+import { serverAuthService } from "@/services/serverAuth.service";
+import {
+  creditPurchaseService,
+} from "@/services/creditPurchaseService";
 
-/**
- * Create a new pending credit purchase.
- *
- * POST /api/billing/purchases
- */
 export async function POST(request: Request) {
   try {
-    const user = await authService.getCurrentUser();
+    const user =
+      await serverAuthService.getCurrentUser();
 
     if (!user) {
       return NextResponse.json(
-        {
-          error: "Unauthorized",
-        },
-        {
-          status: 401,
-        }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
     if (!user.companyId) {
       return NextResponse.json(
         {
-          error: "User is not associated with a company.",
+          error:
+            "User is not associated with a company.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
     const body = await request.json();
 
-    const packageId = body?.packageId;
+    const packageId =
+      typeof body?.packageId === "string"
+        ? body.packageId
+        : null;
 
-    if (
-      typeof packageId !== "string" ||
-      packageId.length === 0
-    ) {
+    const customCredits =
+      Number.isInteger(body?.credits)
+        ? body.credits
+        : null;
+
+    if (!packageId && customCredits === null) {
       return NextResponse.json(
         {
-          error: "A valid credit package is required.",
+          error:
+            "A credit package or custom credit amount is required.",
         },
+        { status: 400 }
+      );
+    }
+
+    if (packageId && customCredits !== null) {
+      return NextResponse.json(
         {
-          status: 400,
-        }
+          error:
+            "Choose either a credit package or custom credits, not both.",
+        },
+        { status: 400 }
       );
     }
 
     const purchase =
-      await creditPurchaseService.createPurchase({
-        companyId: user.companyId,
-        userId: user.id,
-        packageId,
-      });
+      packageId
+        ? await creditPurchaseService.createPurchase({
+            companyId: user.companyId,
+            userId: user.id,
+            packageId,
+          })
+        : await creditPurchaseService.createCustomPurchase({
+            companyId: user.companyId,
+            userId: user.id,
+            credits: customCredits!,
+          });
 
     return NextResponse.json(
       {
         purchase: {
           id: purchase.id,
-          reference: purchase.paymentReference,
-          status: purchase.status,
-          credits: purchase.credits,
-          amount: Number(purchase.amount),
-          currency: purchase.currency,
-          package: purchase.package
-            ? {
-                id: purchase.package.id,
-                name: purchase.package.name,
-                description:
-                  purchase.package.description,
-              }
-            : null,
-          createdAt: purchase.createdAt,
+
+          reference:
+            purchase.paymentReference,
+
+          status:
+            purchase.status,
+
+          credits:
+            purchase.credits,
+
+          amount:
+            Number(purchase.amount),
+
+          currency:
+            purchase.currency,
+
+          package:
+            purchase.package
+              ? {
+                  id: purchase.package.id,
+                  name: purchase.package.name,
+                  description:
+                    purchase.package.description,
+                }
+              : null,
+
+          createdAt:
+            purchase.createdAt,
         },
       },
-      {
-        status: 201,
-      }
+      { status: 201 }
     );
   } catch (error) {
     console.error(
-      "Credit purchase creation error:",
+      "Billing purchase POST error:",
       error
     );
 
@@ -96,41 +121,30 @@ export async function POST(request: Request) {
             ? error.message
             : "Unable to create credit purchase.",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
 
-/**
- * Get the company's credit purchase history.
- *
- * GET /api/billing/purchases
- */
 export async function GET() {
   try {
-    const user = await authService.getCurrentUser();
+    const user =
+      await serverAuthService.getCurrentUser();
 
     if (!user) {
       return NextResponse.json(
-        {
-          error: "Unauthorized",
-        },
-        {
-          status: 401,
-        }
+        { error: "Unauthorized" },
+        { status: 401 }
       );
     }
 
     if (!user.companyId) {
       return NextResponse.json(
         {
-          error: "User is not associated with a company.",
+          error:
+            "User is not associated with a company.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
@@ -140,23 +154,37 @@ export async function GET() {
       );
 
     return NextResponse.json({
-      purchases: purchases.map((purchase) => ({
-        id: purchase.id,
-        reference: purchase.paymentReference,
-        status: purchase.status,
-        credits: purchase.credits,
-        amount: Number(purchase.amount),
-        currency: purchase.currency,
-        package: purchase.package
-          ? {
-              id: purchase.package.id,
-              name: purchase.package.name,
-              description:
-                purchase.package.description,
-            }
-          : null,
-        createdAt: purchase.createdAt,
-      })),
+      purchases: purchases.map(
+        (purchase) => ({
+          id: purchase.id,
+
+          reference:
+            purchase.paymentReference,
+
+          status:
+            purchase.status,
+
+          credits:
+            purchase.credits,
+
+          amount:
+            Number(purchase.amount),
+
+          currency:
+            purchase.currency,
+
+          package:
+            purchase.package
+              ? {
+                  id: purchase.package.id,
+                  name: purchase.package.name,
+                }
+              : null,
+
+          createdAt:
+            purchase.createdAt,
+        })
+      ),
     });
   } catch (error) {
     console.error(
@@ -169,9 +197,7 @@ export async function GET() {
         error:
           "Unable to retrieve credit purchases.",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }

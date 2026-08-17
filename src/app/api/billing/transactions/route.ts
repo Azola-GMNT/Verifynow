@@ -1,26 +1,32 @@
 import { NextResponse } from "next/server";
+
 import { prisma } from "@/lib/prisma";
+import { serverAuthService } from "@/services/serverAuth.service";
 
 export async function GET() {
   try {
-    /*
-     * TODO:
-     * Replace temporary company lookup with the
-     * authenticated user's company.
-     */
-    const company = await prisma.company.findFirst({
-      orderBy: {
-        createdAt: "asc",
-      },
-    });
+    const user =
+      await serverAuthService.getCurrentUser();
 
-    if (!company) {
+    if (!user) {
       return NextResponse.json(
         {
-          error: "Company not found.",
+          error: "Unauthorized",
         },
         {
-          status: 404,
+          status: 401,
+        }
+      );
+    }
+
+    if (!user.companyId) {
+      return NextResponse.json(
+        {
+          error:
+            "User is not associated with a company.",
+        },
+        {
+          status: 400,
         }
       );
     }
@@ -28,16 +34,64 @@ export async function GET() {
     const transactions =
       await prisma.creditTransaction.findMany({
         where: {
-          companyId: company.id,
+          companyId:
+            user.companyId,
         },
+
         orderBy: {
           createdAt: "desc",
         },
+
         take: 50,
       });
 
     return NextResponse.json({
-      transactions,
+      transactions:
+        transactions.map(
+          (transaction) => ({
+            id:
+              transaction.id,
+
+            companyId:
+              transaction.companyId,
+
+            walletId:
+              transaction.walletId,
+
+            type:
+              transaction.type,
+
+            amount:
+              Number(transaction.amount),
+
+            balanceBefore:
+              transaction.balanceBefore,
+
+            balanceAfter:
+              transaction.balanceAfter,
+
+            description:
+              transaction.description,
+
+            reference:
+              transaction.reference,
+
+            verificationId:
+              transaction.verificationId,
+
+            verificationCheckId:
+              transaction.verificationCheckId,
+
+            createdByUserId:
+              transaction.createdByUserId,
+
+            metadata:
+              transaction.metadata,
+
+            createdAt:
+              transaction.createdAt,
+          })
+        ),
     });
   } catch (error) {
     console.error(
@@ -48,7 +102,9 @@ export async function GET() {
     return NextResponse.json(
       {
         error:
-          "Unable to retrieve credit transactions.",
+          error instanceof Error
+            ? error.message
+            : "Unable to retrieve credit transactions.",
       },
       {
         status: 500,

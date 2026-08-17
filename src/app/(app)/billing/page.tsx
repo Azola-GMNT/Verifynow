@@ -194,6 +194,22 @@ export default function BillingPage() {
       null
     );
 
+  /* ================================================== */
+  /* CUSTOM CREDIT PURCHASE - ADDED                     */
+  /* ================================================== */
+
+  const [customCredits, setCustomCredits] =
+    useState("20");
+
+  const [showCustomPurchase, setShowCustomPurchase] =
+    useState(false);
+
+  const [customPurchaseLoading, setCustomPurchaseLoading] =
+    useState(false);
+
+  const [customPurchaseError, setCustomPurchaseError] =
+    useState<string | null>(null);
+
   useEffect(() => {
     loadBilling();
   }, []);
@@ -334,6 +350,124 @@ export default function BillingPage() {
     }
   }
 
+  /* ================================================== */
+  /* CUSTOM CREDIT PURCHASE - ADDED                     */
+  /* ================================================== */
+
+  function getCustomCreditsNumber() {
+    const value = Number(customCredits);
+
+    if (!Number.isFinite(value)) {
+      return 0;
+    }
+
+    return Math.floor(value);
+  }
+
+  function getCreditUnitPrice() {
+    if (packages.length === 0) {
+      return 0;
+    }
+
+    const validPackages = packages.filter(
+      (item) =>
+        item.credits > 0 &&
+        item.price > 0
+    );
+
+    if (validPackages.length === 0) {
+      return 0;
+    }
+
+    return Math.min(
+      ...validPackages.map(
+        (item) =>
+          item.price / item.credits
+      )
+    );
+  }
+
+  function getCustomEstimatedPrice() {
+    const credits =
+      getCustomCreditsNumber();
+
+    return (
+      credits *
+      getCreditUnitPrice()
+    );
+  }
+
+  async function handleCustomPurchase() {
+    const credits =
+      getCustomCreditsNumber();
+
+    if (credits < 20) {
+      setCustomPurchaseError(
+        "The minimum custom purchase is 20 credits."
+      );
+
+      return;
+    }
+
+    try {
+      setCustomPurchaseLoading(true);
+      setCustomPurchaseError(null);
+
+      const response = await fetch(
+        "/api/billing/purchases",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            credits,
+          }),
+        }
+      );
+
+      const data =
+        (await response.json()) as
+          | PurchaseResponse
+          | { error?: string };
+
+      if (!response.ok) {
+        throw new Error(
+          "error" in data && data.error
+            ? data.error
+            : "Unable to create custom credit purchase."
+        );
+      }
+
+      const purchase =
+        (data as PurchaseResponse).purchase;
+
+      setPurchaseSuccess(purchase);
+
+      setPurchases((current) => [
+        purchase,
+        ...current,
+      ]);
+
+      setShowCustomPurchase(false);
+      setCustomCredits("20");
+    } catch (err) {
+      console.error(
+        "Custom credit purchase error:",
+        err
+      );
+
+      setCustomPurchaseError(
+        err instanceof Error
+          ? err.message
+          : "Unable to create custom credit purchase."
+      );
+    } finally {
+      setCustomPurchaseLoading(false);
+    }
+  }
+
   function closePurchaseModal() {
     if (purchaseLoading) {
       return;
@@ -345,6 +479,15 @@ export default function BillingPage() {
 
   function closeSuccessModal() {
     setPurchaseSuccess(null);
+  }
+
+  function closeCustomPurchaseModal() {
+    if (customPurchaseLoading) {
+      return;
+    }
+
+    setShowCustomPurchase(false);
+    setCustomPurchaseError(null);
   }
 
   return (
@@ -540,8 +683,8 @@ export default function BillingPage() {
           </div>
 
           {loading ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {[1, 2, 3, 4].map(
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+              {[1, 2, 3, 4, 5].map(
                 (item) => (
                   <div
                     key={item}
@@ -567,76 +710,170 @@ export default function BillingPage() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               {packages.map(
-                (creditPackage, index) => (
-                  <div
-                    key={creditPackage.id}
-                    className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
-                      index === 1
-                        ? "border-slate-900 ring-1 ring-slate-900"
-                        : "border-slate-200"
-                    }`}
-                  >
-                    {index === 1 && (
-                      <div className="absolute -top-3 left-5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                        Popular
-                      </div>
-                    )}
+                (creditPackage, index) => {
+                  const colourClasses = [
+                    {
+                      border:
+                        "border-blue-200",
+                      icon:
+                        "bg-blue-50 text-blue-600",
+                      button:
+                        "bg-blue-600 hover:bg-blue-700",
+                    },
+                    {
+                      border:
+                        "border-violet-200",
+                      icon:
+                        "bg-violet-50 text-violet-600",
+                      button:
+                        "bg-violet-600 hover:bg-violet-700",
+                    },
+                    {
+                      border:
+                        "border-emerald-200",
+                      icon:
+                        "bg-emerald-50 text-emerald-600",
+                      button:
+                        "bg-emerald-600 hover:bg-emerald-700",
+                    },
+                    {
+                      border:
+                        "border-amber-200",
+                      icon:
+                        "bg-amber-50 text-amber-600",
+                      button:
+                        "bg-amber-600 hover:bg-amber-700",
+                    },
+                  ];
 
-                    <div className="flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
-                        <Zap
-                          size={18}
-                          className="text-slate-700"
-                        />
-                      </div>
+                  const colour =
+                    colourClasses[
+                      index %
+                        colourClasses.length
+                    ];
 
-                      <span className="text-xs font-medium text-slate-400">
-                        PACK
-                      </span>
-                    </div>
-
-                    <h3 className="mt-5 text-lg font-semibold text-slate-950">
-                      {creditPackage.name}
-                    </h3>
-
-                    <p className="mt-2 min-h-[40px] text-sm leading-5 text-slate-500">
-                      {creditPackage.description ||
-                        "Additional verification credits for your organisation."}
-                    </p>
-
-                    <div className="mt-6">
-                      <p className="text-3xl font-bold tracking-tight text-slate-950">
-                        {formatCurrency(
-                          creditPackage.price,
-                          creditPackage.currency
-                        )}
-                      </p>
-
-                      <p className="mt-1 text-sm font-medium text-slate-500">
-                        {formatNumber(
-                          creditPackage.credits
-                        )}{" "}
-                        credits
-                      </p>
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedPackage(
-                          creditPackage
-                        )
-                      }
-                      className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                  return (
+                    <div
+                      key={creditPackage.id}
+                      className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${colour.border}`}
                     >
-                      <CreditCard size={16} />
-                      Buy Credits
-                    </button>
-                  </div>
-                )
+                      {index === 1 && (
+                        <div className="absolute -top-3 left-5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+                          Popular
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-xl ${colour.icon}`}
+                        >
+                          <Zap
+                            size={18}
+                          />
+                        </div>
+
+                        <span className="text-xs font-medium text-slate-400">
+                          PACK
+                        </span>
+                      </div>
+
+                      <h3 className="mt-5 text-lg font-semibold text-slate-950">
+                        {creditPackage.name}
+                      </h3>
+
+                      <p className="mt-2 min-h-[40px] text-sm leading-5 text-slate-500">
+                        {creditPackage.description ||
+                          "Additional verification credits for your organisation."}
+                      </p>
+
+                      <div className="mt-6">
+                        <p className="text-3xl font-bold tracking-tight text-slate-950">
+                          {formatCurrency(
+                            creditPackage.price,
+                            creditPackage.currency
+                          )}
+                        </p>
+
+                        <p className="mt-1 text-sm font-medium text-slate-500">
+                          {formatNumber(
+                            creditPackage.credits
+                          )}{" "}
+                          credits
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedPackage(
+                            creditPackage
+                          )
+                        }
+                        className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition ${colour.button}`}
+                      >
+                        <CreditCard size={16} />
+                        Buy Credits
+                      </button>
+                    </div>
+                  );
+                }
               )}
+
+              {/* ------------------------------------------------ */}
+              {/* CUSTOM CREDITS - ADDED                          */}
+              {/* ------------------------------------------------ */}
+
+              <div className="relative flex flex-col rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 via-white to-blue-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
+                    <CreditCard
+                      size={18}
+                    />
+                  </div>
+
+                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+                    FLEXIBLE
+                  </span>
+                </div>
+
+                <h3 className="mt-5 text-lg font-semibold text-slate-950">
+                  Custom Credits
+                </h3>
+
+                <p className="mt-2 min-h-[40px] text-sm leading-5 text-slate-500">
+                  Purchase exactly the number
+                  of credits your organisation
+                  needs.
+                </p>
+
+                <div className="mt-6">
+                  <p className="text-3xl font-bold tracking-tight text-slate-950">
+                    20+
+                  </p>
+
+                  <p className="mt-1 text-sm font-medium text-slate-500">
+                    credits minimum
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomPurchaseError(
+                      null
+                    );
+                    setShowCustomPurchase(
+                      true
+                    );
+                  }}
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  <Zap size={16} />
+                  Choose Amount
+                </button>
+              </div>
             </div>
           )}
         </section>
@@ -1256,6 +1493,194 @@ export default function BillingPage() {
                       <CreditCard size={16} />
 
                       Confirm Purchase
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================================== */}
+      {/* CUSTOM CREDIT PURCHASE MODAL - ADDED              */}
+      {/* ================================================== */}
+
+      {showCustomPurchase && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="custom-credit-title"
+            className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+              <div>
+                <h2
+                  id="custom-credit-title"
+                  className="text-lg font-semibold text-slate-950"
+                >
+                  Custom Credit Purchase
+                </h2>
+
+                <p className="mt-1 text-xs text-slate-500">
+                  Choose exactly how many credits
+                  you want to purchase.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  closeCustomPurchaseModal
+                }
+                disabled={customPurchaseLoading}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-5 p-6">
+              <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+                <div className="flex gap-3">
+                  <Zap
+                    size={18}
+                    className="mt-0.5 shrink-0 text-blue-600"
+                  />
+
+                  <div>
+                    <p className="text-sm font-semibold text-blue-900">
+                      Flexible purchasing
+                    </p>
+
+                    <p className="mt-1 text-xs leading-5 text-blue-800">
+                      Purchase any whole number of
+                      credits, with a minimum purchase
+                      of 20 credits.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="customCredits"
+                  className="text-sm font-semibold text-slate-900"
+                >
+                  Number of credits
+                </label>
+
+                <div className="relative mt-2">
+                  <input
+                    id="customCredits"
+                    type="number"
+                    min={20}
+                    step={1}
+                    value={customCredits}
+                    onChange={(event) => {
+                      setCustomCredits(
+                        event.target.value
+                      );
+                      setCustomPurchaseError(
+                        null
+                      );
+                    }}
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-24 text-lg font-semibold text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">
+                    credits
+                  </span>
+                </div>
+
+                <p className="mt-2 text-xs text-slate-400">
+                  Minimum purchase: 20 credits
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">
+                    Credits
+                  </span>
+
+                  <span className="text-sm font-semibold text-slate-950">
+                    {formatNumber(
+                      Math.max(
+                        0,
+                        getCustomCreditsNumber()
+                      )
+                    )}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3">
+                  <span className="text-sm text-slate-500">
+                    Estimated amount
+                  </span>
+
+                  <span className="text-lg font-bold text-slate-950">
+                    {formatCurrency(
+                      getCustomEstimatedPrice(),
+                      packages[0]?.currency ||
+                        "ZAR"
+                    )}
+                  </span>
+                </div>
+
+                <p className="mt-3 text-[11px] leading-4 text-slate-400">
+                  The final purchase amount is
+                  calculated and validated by the
+                  billing service.
+                </p>
+              </div>
+
+              {customPurchaseError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                  {customPurchaseError}
+                </div>
+              )}
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={
+                    closeCustomPurchaseModal
+                  }
+                  disabled={customPurchaseLoading}
+                  className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    handleCustomPurchase
+                  }
+                  disabled={
+                    customPurchaseLoading ||
+                    getCustomCreditsNumber() <
+                      20
+                  }
+                  className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {customPurchaseLoading ? (
+                    <>
+                      <Loader2
+                        size={16}
+                        className="animate-spin"
+                      />
+
+                      Creating purchase...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard size={16} />
+
+                      Continue
                     </>
                   )}
                 </button>

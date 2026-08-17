@@ -202,7 +202,7 @@ model VerificationCheck {
   verificationCase   VerificationCase     @relation(fields: [verificationCaseId], references: [id], onDelete: Cascade)
   results            VerificationResult[]
   creditTransactions CreditTransaction[]
-  usage              VerificationUsage?
+  usageRecords       VerificationUsage[]
 
   @@unique([verificationCaseId, checkKey])
   @@index([verificationCaseId])
@@ -338,20 +338,28 @@ model CreditTransaction {
 }
 
 model VerificationPricing {
-  id          String   @id @default(cuid())
-  checkKey    String   @unique
+  id          String  @id @default(cuid())
+  checkKey    String  @unique
   checkName   String
   category    String?
-  creditCost  Int
-  active      Boolean  @default(true)
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  usage VerificationUsage[]
+  baseCost      Decimal? @db.Decimal(12, 2)
+  markupPercent Decimal? @db.Decimal(5, 2)
 
-  @@index([active])
+  creditCost     Int
+  turnaroundTime String?
+  dataSource     String?
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  usages VerificationUsage[]
+
   @@index([category])
+  @@index([active])
 }
 
 model CreditPackage {
@@ -375,7 +383,7 @@ model CreditPurchase {
   id        String  @id @default(cuid())
   companyId String
   userId    String?
-  packageId String
+  packageId String?
 
   credits  Int
   amount   Decimal @db.Decimal(12, 2)
@@ -387,13 +395,14 @@ model CreditPurchase {
 
   metadata Json?
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  paidAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  paidAt           DateTime?
+  gatewayReference String?
 
-  company Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user    User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  package CreditPackage @relation(fields: [packageId], references: [id], onDelete: Restrict)
+  company Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  package CreditPackage? @relation(fields: [packageId], references: [id], onDelete: Restrict)
 
   @@unique([paymentGateway, paymentReference])
   @@index([companyId])
@@ -404,22 +413,25 @@ model CreditPurchase {
 }
 
 model VerificationUsage {
-  id                  String   @id @default(cuid())
+  id                  String @id @default(cuid())
   companyId           String
   verificationId      String
   verificationCheckId String
   pricingId           String
-  creditsConsumed     Int
-  createdAt           DateTime @default(now())
+
+  creditsCharged Int
+  amountCharged  Decimal? @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
 
   company           Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   verification      VerificationCase    @relation(fields: [verificationId], references: [id], onDelete: Cascade)
   verificationCheck VerificationCheck   @relation(fields: [verificationCheckId], references: [id], onDelete: Cascade)
   pricing           VerificationPricing @relation(fields: [pricingId], references: [id], onDelete: Restrict)
 
-  @@unique([verificationCheckId])
   @@index([companyId])
   @@index([verificationId])
+  @@index([verificationCheckId])
   @@index([pricingId])
   @@index([createdAt])
 }

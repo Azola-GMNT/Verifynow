@@ -1,15 +1,25 @@
 import { prisma } from "@/lib/prisma";
 
+const CREDIT_VALUE_ZAR = 8.5;
+const MIN_CUSTOM_CREDITS = 1;
+const MAX_CUSTOM_CREDITS = 1_000_000;
+
 class CreditPurchaseService {
   /**
-   * Create a new pending credit purchase.
+   * Generate an internal purchase reference.
+   */
+  private generateReference() {
+    return `PUR-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 8)
+      .toUpperCase()}`;
+  }
+
+  /**
+   * Create a pending package-based purchase.
    *
-   * This creates the purchase record only.
-   *
-   * IMPORTANT:
-   * Credits are NOT added to the company's wallet here.
-   * Credits must only be allocated after payment has
-   * been successfully confirmed.
+   * Credits are NOT allocated here.
+   * They are allocated only after confirmation.
    */
   async createPurchase(params: {
     companyId: string;
@@ -30,73 +40,137 @@ class CreditPurchaseService {
       );
     }
 
-    /**
-     * Generate an internal purchase reference.
-     *
-     * This is our own reference and is separate from
-     * any future payment-provider transaction reference.
-     */
-    const paymentReference =
-      `PUR-${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 8)
-        .toUpperCase()}`;
+    const reference =
+      this.generateReference();
 
-    /**
-     * Create the purchase using a snapshot of the
-     * package's current pricing.
-     *
-     * This ensures that if the package price or credit
-     * allocation changes later, an existing purchase
-     * retains the original values.
-     */
-    const purchase =
-      await prisma.creditPurchase.create({
-        data: {
-          companyId: params.companyId,
+    return prisma.creditPurchase.create({
+      data: {
+        companyId: params.companyId,
+        userId: params.userId ?? null,
 
-          userId:
-            params.userId ?? null,
+        packageId:
+          creditPackage.id,
 
-          packageId:
-            creditPackage.id,
+        credits:
+          creditPackage.credits,
 
-          credits:
-            creditPackage.credits,
+        amount:
+          creditPackage.price,
 
-          amount:
-            creditPackage.price,
+        currency:
+          creditPackage.currency,
 
-          currency:
-            creditPackage.currency,
+        status: "PENDING",
 
-          status:
-            "PENDING",
+        paymentGateway: null,
 
-          paymentGateway:
-            null,
+        paymentReference:
+          reference,
 
-          paymentReference,
-
-          metadata: {
-            packageName:
-              creditPackage.name,
-          },
+        metadata: {
+          purchaseType: "PACKAGE",
+          packageName:
+            creditPackage.name,
+          creditValue:
+            CREDIT_VALUE_ZAR,
         },
+      },
 
-        include: {
-          package: true,
-        },
-      });
-
-    return purchase;
+      include: {
+        package: true,
+      },
+    });
   }
 
   /**
-   * Get one purchase belonging to a specific company.
+   * Create a custom credit purchase.
    *
-   * The companyId restriction is important so a user cannot
-   * retrieve another company's purchase by knowing its ID.
+   * Example:
+   *
+   * 1 credit  = R8.50
+   * 10 credits = R85
+   * 50 credits = R425
+   * 75 credits = R637.50
+   *
+   * Custom purchases intentionally have
+   * packageId = null.
+   */
+  async createCustomPurchase(params: {
+    companyId: string;
+    userId?: string;
+    credits: number;
+  }) {
+    const credits =
+      Math.floor(params.credits);
+
+    if (
+      !Number.isFinite(credits) ||
+      credits < MIN_CUSTOM_CREDITS
+    ) {
+      throw new Error(
+        `Custom purchases require at least ${MIN_CUSTOM_CREDITS} credit.`
+      );
+    }
+
+    if (
+      credits > MAX_CUSTOM_CREDITS
+    ) {
+      throw new Error(
+        "Custom credit purchase exceeds the maximum allowed amount."
+      );
+    }
+
+    const amount =
+      Math.round(
+        credits *
+          CREDIT_VALUE_ZAR *
+          100
+      ) / 100;
+
+    const reference =
+      this.generateReference();
+
+    return prisma.creditPurchase.create({
+      data: {
+        companyId:
+          params.companyId,
+
+        userId:
+          params.userId ?? null,
+
+        packageId: null,
+
+        credits,
+
+        amount,
+
+        currency: "ZAR",
+
+        status: "PENDING",
+
+        paymentGateway: null,
+
+        paymentReference:
+          reference,
+
+        metadata: {
+          purchaseType: "CUSTOM",
+          creditValue:
+            CREDIT_VALUE_ZAR,
+          credits,
+          amount,
+        },
+      },
+
+      include: {
+        package: true,
+      },
+    });
+  }
+
+  /**
+   * Retrieve one purchase belonging to
+   * a specific company.
    */
   async getPurchase(
     purchaseId: string,
@@ -115,7 +189,8 @@ class CreditPurchaseService {
   }
 
   /**
-   * Get all credit purchases belonging to a company.
+   * Retrieve all purchases belonging
+   * to a company.
    */
   async getPurchases(
     companyId: string
@@ -133,6 +208,288 @@ class CreditPurchaseService {
         createdAt: "desc",
       },
     });
+  }
+
+  /**
+   * Confirm a purchase and allocate
+   * the credits to the company wallet.
+   *
+   * This operation is transactional and
+   * idempotent.
+   */
+  async confirmPurchase(params: {
+    purchaseId: string;
+    companyId: string;
+    paymentGateway?: string;
+    gatewayReference?: string;
+    metadata?: unknown;
+  }) {
+    return prisma.$transaction(
+      async (tx) => {
+        const purchase =
+          await tx.creditPurchase.findFirst({
+            where: {
+              id: params.purchaseId,
+              companyId:
+                params.companyId,
+            },
+
+            include: {
+              package: true,
+            },
+          });
+
+        if (!purchase) {
+          throw new Error(
+            "Credit purchase not found."
+          );
+        }
+
+        /*
+         * If already completed, DO NOT
+         * allocate the credits again.
+         */
+        if (
+          purchase.status ===
+          "COMPLETED"
+        ) {
+          const wallet =
+            await tx.creditWallet.findUnique({
+              where: {
+                companyId:
+                  params.companyId,
+              },
+            });
+
+          const transaction =
+            await tx.creditTransaction.findFirst({
+              where: {
+                companyId:
+                  params.companyId,
+
+                reference:
+                  purchase.paymentReference,
+              },
+
+              orderBy: {
+                createdAt: "desc",
+              },
+            });
+
+          return {
+            alreadyConfirmed: true,
+
+            purchase,
+
+            wallet,
+
+            transaction,
+
+            metadata:
+              purchase.metadata,
+          };
+        }
+
+        /*
+         * Failed/cancelled purchases cannot
+         * be confirmed.
+         */
+        if (
+          purchase.status ===
+            "FAILED" ||
+          purchase.status ===
+            "CANCELLED"
+        ) {
+          throw new Error(
+            `Purchase cannot be confirmed because its status is ${purchase.status}.`
+          );
+        }
+
+        /*
+         * Get the company wallet.
+         */
+        let wallet =
+          await tx.creditWallet.findUnique({
+            where: {
+              companyId:
+                params.companyId,
+            },
+          });
+
+        /*
+         * Create wallet if it doesn't
+         * exist yet.
+         */
+        if (!wallet) {
+          wallet =
+            await tx.creditWallet.create({
+              data: {
+                companyId:
+                  params.companyId,
+
+                balance: 0,
+              },
+            });
+        }
+
+        const balanceBefore =
+          wallet.balance;
+
+        const balanceAfter =
+          balanceBefore +
+          purchase.credits;
+
+        /*
+         * Update wallet.
+         */
+        const updatedWallet =
+          await tx.creditWallet.update({
+            where: {
+              id: wallet.id,
+            },
+
+            data: {
+              balance:
+                balanceAfter,
+            },
+          });
+
+        /*
+         * Combine existing purchase
+         * metadata with confirmation
+         * metadata.
+         */
+        const existingMetadata =
+          purchase.metadata;
+
+        const purchaseMetadata =
+          existingMetadata &&
+          typeof existingMetadata ===
+            "object" &&
+          !Array.isArray(
+            existingMetadata
+          )
+            ? existingMetadata
+            : {};
+
+        const confirmationMetadata =
+          params.metadata &&
+          typeof params.metadata ===
+            "object" &&
+          !Array.isArray(
+            params.metadata
+          )
+            ? params.metadata
+            : {};
+
+        const mergedMetadata = {
+          ...purchaseMetadata,
+          ...confirmationMetadata,
+          purchaseId:
+            purchase.id,
+          purchaseType:
+            purchase.package
+              ? "PACKAGE"
+              : "CUSTOM",
+          creditValue:
+            CREDIT_VALUE_ZAR,
+        };
+
+        /*
+         * Create the credit transaction.
+         */
+        const transaction =
+          await tx.creditTransaction.create({
+            data: {
+              companyId:
+                params.companyId,
+
+              walletId:
+                updatedWallet.id,
+
+              type:
+                "PURCHASE",
+
+              amount:
+                purchase.credits,
+
+              balanceBefore,
+
+              balanceAfter,
+
+              description:
+                purchase.package
+                  ? `Purchase of ${purchase.credits} credits - ${purchase.package.name}`
+                  : `Custom purchase of ${purchase.credits} credits`,
+
+              reference:
+                purchase.paymentReference ??
+                purchase.id,
+
+              verificationId:
+                null,
+
+              verificationCheckId:
+                null,
+
+              createdByUserId:
+                purchase.userId,
+
+              metadata:
+                mergedMetadata,
+            },
+          });
+
+        /*
+         * Mark the purchase as completed.
+         */
+        const completedPurchase =
+          await tx.creditPurchase.update({
+            where: {
+              id: purchase.id,
+            },
+
+            data: {
+              status:
+                "COMPLETED",
+
+              paymentGateway:
+                params.paymentGateway ??
+                purchase.paymentGateway,
+
+              gatewayReference:
+                params.gatewayReference ??
+                purchase.gatewayReference,
+
+              paidAt:
+                new Date(),
+
+              metadata:
+                mergedMetadata,
+            },
+
+            include: {
+              package: true,
+            },
+          });
+
+        return {
+          alreadyConfirmed:
+            false,
+
+          purchase:
+            completedPurchase,
+
+          wallet:
+            updatedWallet,
+
+          transaction,
+
+          metadata:
+            mergedMetadata,
+        };
+      }
+    );
   }
 }
 
