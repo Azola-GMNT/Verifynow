@@ -33,16 +33,7 @@ async function main() {
       currency: "ZAR",
       sortOrder: 3,
     },
-    {
-      name: "Enterprise",
-      description:
-        "For high-volume verification operations.",
-      credits: 5000,
-      price: 5000 * CREDIT_VALUE_ZAR,
-      currency: "ZAR",
-      sortOrder: 4,
-    },
-  ];
+     ];
 
   for (const item of packages) {
     await prisma.creditPackage.upsert({

@@ -169,7 +169,10 @@ export default function BillingPage() {
     useState<BillingResponse | null>(null);
 
   const [packages, setPackages] =
-    useState<CreditPackage[]>([]);
+  useState<CreditPackage[]>([]);
+
+const [customCredits, setCustomCredits] =
+  useState(20);
 
   const [purchases, setPurchases] =
     useState<Purchase[]>([]);
@@ -198,10 +201,7 @@ export default function BillingPage() {
   /* CUSTOM CREDIT PURCHASE - ADDED                     */
   /* ================================================== */
 
-  const [customCredits, setCustomCredits] =
-    useState("20");
-
-  const [showCustomPurchase, setShowCustomPurchase] =
+    const [showCustomPurchase, setShowCustomPurchase] =
     useState(false);
 
   const [customPurchaseLoading, setCustomPurchaseLoading] =
@@ -267,7 +267,15 @@ export default function BillingPage() {
         };
 
       setBilling(billingData);
-      setPackages(packagesData);
+      setPackages(
+  packagesData
+    .filter(
+      (item) =>
+        item.name.toLowerCase() !==
+        "enterprise"
+    )
+    .slice(0, 3)
+);
       setPurchases(
         purchasesData.purchases ?? []
       );
@@ -451,7 +459,7 @@ export default function BillingPage() {
       ]);
 
       setShowCustomPurchase(false);
-      setCustomCredits("20");
+      setCustomCredits(20);
     } catch (err) {
       console.error(
         "Custom credit purchase error:",
@@ -493,6 +501,8 @@ export default function BillingPage() {
   return (
     <DashboardLayout>
       <div className="space-y-8 p-6 lg:p-8">
+        </div>
+
         {/* -------------------------------------------------- */}
         {/* HEADER                                             */}
         {/* -------------------------------------------------- */}
@@ -516,7 +526,7 @@ export default function BillingPage() {
               Billing
             </h1>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm gap-2 text-slate-500">
               Manage credits, verification costs
               and transaction history.
             </p>
@@ -580,7 +590,7 @@ export default function BillingPage() {
         {/* SUMMARY CARDS                                       */}
         {/* -------------------------------------------------- */}
 
-        <section className="grid gap-4 md:grid-cols-3">
+        <section className="grid gap-8 md:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
@@ -671,218 +681,225 @@ export default function BillingPage() {
         {/* -------------------------------------------------- */}
 
         <section>
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-slate-950">
-              Purchase Credits
-            </h2>
+  <div className="mb-6">
+    <h2 className="text-lg font-semibold text-slate-950">
+      Purchase Credits
+    </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Choose a credit package for your
-              verification requirements.
-            </p>
-          </div>
+    <p className="mt-1 text-sm text-slate-500">
+      Choose a credit package for your verification requirements.
+    </p>
+  </div>
 
-          {loading ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-              {[1, 2, 3, 4, 5].map(
-                (item) => (
-                  <div
-                    key={item}
-                    className="h-64 animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
-                  />
-                )
-              )}
+  {loading ? (
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      {[1, 2, 3, 4].map((item) => (
+        <div
+          key={item}
+          className="h-[560px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100"
+        />
+      ))}
+    </div>
+  ) : packages.length === 0 ? (
+    <div className="mb-8 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+      <WalletCards
+        size={28}
+        className="mx-auto text-slate-400"
+      />
+
+      <h3 className="mt-3 font-semibold text-slate-900">
+        No credit packages available
+      </h3>
+
+      <p className="mt-1 text-sm text-slate-500">
+        Credit packages have not been configured yet.
+      </p>
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 xl:grid-cols-4">
+
+      {/* ================================================ */}
+      {/* CREDIT PACKAGES                                  */}
+      {/* ================================================ */}
+
+      {packages.slice(0, 3).map((creditPackage, index) => {
+        const colours = [
+          {
+            border: "border-blue-200",
+            icon: "bg-blue-50 text-blue-600",
+            button: "bg-blue-600 hover:bg-blue-700",
+          },
+          {
+            border: "border-purple-200",
+            icon: "bg-purple-50 text-purple-600",
+            button: "bg-purple-600 hover:bg-purple-700",
+          },
+          {
+            border: "border-emerald-200",
+            icon: "bg-emerald-50 text-emerald-600",
+            button: "bg-emerald-600 hover:bg-emerald-700",
+          },
+        ];
+
+        const colour = colours[index];
+
+        return (
+          <div
+            key={creditPackage.id}
+            className={`mb-8 relative flex min-h-[380px] flex-col overflow-hidden rounded-2xl border bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${colour.border}`}
+          >
+            {/* Popular badge */}
+            {index === 1 && (
+              <div className="absolute left-1/2 top-0 -translate-x-1/2 rounded-full bg-slate-900 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                Popular
+              </div>
+            )}
+
+            {/* Icon / label */}
+            <div className="flex items-center justify-between">
+              <div
+                className={`flex h-11 w-11 items-center justify-center rounded-xl ${colour.icon}`}
+              >
+                <Zap size={19} />
+              </div>
+
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+                PACK
+              </span>
             </div>
-          ) : packages.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-              <WalletCards
-                size={28}
-                className="mx-auto text-slate-400"
-              />
 
-              <h3 className="mt-3 font-semibold text-slate-900">
-                No credit packages available
+            {/* Name */}
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold tracking-tight text-slate-950">
+                {creditPackage.name}
               </h3>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Credit packages have not been
-                configured yet.
+              <p className="mt-3 min-h-[72px] text-sm leading-6 text-slate-500">
+                {creditPackage.description ||
+                  "Additional verification credits for your organisation."}
               </p>
             </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-              {packages.map(
-                (creditPackage, index) => {
-                  const colourClasses = [
-                    {
-                      border:
-                        "border-blue-200",
-                      icon:
-                        "bg-blue-50 text-blue-600",
-                      button:
-                        "bg-blue-600 hover:bg-blue-700",
-                    },
-                    {
-                      border:
-                        "border-violet-200",
-                      icon:
-                        "bg-violet-50 text-violet-600",
-                      button:
-                        "bg-violet-600 hover:bg-violet-700",
-                    },
-                    {
-                      border:
-                        "border-emerald-200",
-                      icon:
-                        "bg-emerald-50 text-emerald-600",
-                      button:
-                        "bg-emerald-600 hover:bg-emerald-700",
-                    },
-                    {
-                      border:
-                        "border-amber-200",
-                      icon:
-                        "bg-amber-50 text-amber-600",
-                      button:
-                        "bg-amber-600 hover:bg-amber-700",
-                    },
-                  ];
 
-                  const colour =
-                    colourClasses[
-                      index %
-                        colourClasses.length
-                    ];
+            {/* Price */}
+            <div className="mt-8">
+              <p className="text-3xl font-bold tracking-tight text-slate-950">
+                {formatCurrency(
+                  creditPackage.price,
+                  creditPackage.currency
+                )}
+              </p>
 
-                  return (
-                    <div
-                      key={creditPackage.id}
-                      className={`relative flex flex-col rounded-2xl border bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${colour.border}`}
-                    >
-                      {index === 1 && (
-                        <div className="absolute -top-3 left-5 rounded-full bg-slate-900 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                          Popular
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <div
-                          className={`flex h-10 w-10 items-center justify-center rounded-xl ${colour.icon}`}
-                        >
-                          <Zap
-                            size={18}
-                          />
-                        </div>
-
-                        <span className="text-xs font-medium text-slate-400">
-                          PACK
-                        </span>
-                      </div>
-
-                      <h3 className="mt-5 text-lg font-semibold text-slate-950">
-                        {creditPackage.name}
-                      </h3>
-
-                      <p className="mt-2 min-h-[40px] text-sm leading-5 text-slate-500">
-                        {creditPackage.description ||
-                          "Additional verification credits for your organisation."}
-                      </p>
-
-                      <div className="mt-6">
-                        <p className="text-3xl font-bold tracking-tight text-slate-950">
-                          {formatCurrency(
-                            creditPackage.price,
-                            creditPackage.currency
-                          )}
-                        </p>
-
-                        <p className="mt-1 text-sm font-medium text-slate-500">
-                          {formatNumber(
-                            creditPackage.credits
-                          )}{" "}
-                          credits
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedPackage(
-                            creditPackage
-                          )
-                        }
-                        className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition ${colour.button}`}
-                      >
-                        <CreditCard size={16} />
-                        Buy Credits
-                      </button>
-                    </div>
-                  );
-                }
-              )}
-
-              {/* ------------------------------------------------ */}
-              {/* CUSTOM CREDITS - ADDED                          */}
-              {/* ------------------------------------------------ */}
-
-              <div className="relative flex flex-col rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 via-white to-blue-50 p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:shadow-md">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
-                    <CreditCard
-                      size={18}
-                    />
-                  </div>
-
-                  <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-blue-700">
-                    FLEXIBLE
-                  </span>
-                </div>
-
-                <h3 className="mt-5 text-lg font-semibold text-slate-950">
-                  Custom Credits
-                </h3>
-
-                <p className="mt-2 min-h-[40px] text-sm leading-5 text-slate-500">
-                  Purchase exactly the number
-                  of credits your organisation
-                  needs.
-                </p>
-
-                <div className="mt-6">
-                  <p className="text-3xl font-bold tracking-tight text-slate-950">
-                    20+
-                  </p>
-
-                  <p className="mt-1 text-sm font-medium text-slate-500">
-                    credits minimum
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCustomPurchaseError(
-                      null
-                    );
-                    setShowCustomPurchase(
-                      true
-                    );
-                  }}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  <Zap size={16} />
-                  Choose Amount
-                </button>
-              </div>
+              <p className="mt-2 text-sm font-medium text-slate-500">
+                {formatNumber(creditPackage.credits)} credits
+              </p>
             </div>
-          )}
-        </section>
 
+           
+            {/* Button */}
+            <div className="mt-auto pt-8">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedPackage(creditPackage)
+                }
+                className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold text-white transition ${colour.button}`}
+              >
+                <CreditCard size={16} />
+                Buy Credits
+              </button>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* ================================================ */}
+      {/* CUSTOM CREDITS                                  */}
+      {/* ================================================ */}
+
+      <div className="mb-8 relative flex min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md">
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900 text-white">
+            <CreditCard size={19} />
+          </div>
+
+          <span className="rounded-full bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-blue-700">
+            Flexible
+          </span>
+        </div>
+
+        {/* Name */}
+        <div className="mt-6">
+          <h3 className="text-xl font-semibold tracking-tight text-slate-950">
+            Custom Credits
+          </h3>
+
+          <p className="mt-2 min-h-[30px] text-sm leading-6 text-slate-400">
+            Buy the credits you need.
+          </p>
+        </div>
+
+        {/* Custom credit amount */}
+        <div className="mt-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            Credits
+          </p>
+
+          <div className="relative mt-2">
+            <input
+              id="customCredits"
+              type="number"
+              min={20}
+              step={1}
+              value={customCredits}
+              onChange={(event) => {
+                const value =
+                  Number(event.target.value);
+
+                setCustomCredits(
+                  Number.isFinite(value)
+                    ? Math.max(20, value)
+                    : 20
+                );
+
+                setCustomPurchaseError(null);
+              }}
+              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-semibold text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+            />
+          </div>
+
+          <p className="mt-2 text-xs text-slate-400">
+            Minimum purchase: 20 credits
+          </p>
+        </div>
+
+
+        {/* Custom button */}
+        <div className="mt-auto pt-8">
+          <button
+            type="button"
+            onClick={() => {
+              setCustomPurchaseError(null);
+              setShowCustomPurchase(true);
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+          >
+            <Zap size={10} />
+            Choose Amount
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+</section>
+
+           
         {/* -------------------------------------------------- */}
         {/* HOW CREDITS WORK                                    */}
         {/* -------------------------------------------------- */}
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="mb-8 rounded-2xl border border-slate-250 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-slate-950">
               How Credits Work
@@ -954,7 +971,7 @@ export default function BillingPage() {
         {/* VERIFICATION PRICING                               */}
         {/* -------------------------------------------------- */}
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
@@ -1054,7 +1071,7 @@ export default function BillingPage() {
         {/* PURCHASE HISTORY                                   */}
         {/* -------------------------------------------------- */}
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-slate-200 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
@@ -1212,7 +1229,7 @@ export default function BillingPage() {
         {/* TRANSACTION HISTORY                                */}
         {/* -------------------------------------------------- */}
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <section className="`m-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
@@ -1342,14 +1359,13 @@ export default function BillingPage() {
             </div>
           )}
         </section>
-      </div>
 
       {/* ================================================== */}
       {/* PURCHASE CONFIRMATION MODAL                       */}
       {/* ================================================== */}
 
       {selectedPackage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
+        <div className="m-8 fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
           <div
             role="dialog"
             aria-modal="true"
@@ -1574,28 +1590,31 @@ export default function BillingPage() {
 
                 <div className="relative mt-2">
                   <input
-                    id="customCredits"
-                    type="number"
-                    min={20}
-                    step={1}
-                    value={customCredits}
-                    onChange={(event) => {
-                      setCustomCredits(
-                        event.target.value
-                      );
-                      setCustomPurchaseError(
-                        null
-                      );
-                    }}
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-24 text-lg font-semibold text-slate-950 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                  />
+  id="customCredits"
+  type="number"
+  min={20}
+  step={1}
+  value={customCredits}
+  onChange={(event) => {
+    const value = Number(event.target.value);
+
+    setCustomCredits(
+      Number.isFinite(value)
+        ? Math.max(20, value)
+        : 20
+    );
+
+    setCustomPurchaseError(null);
+  }}
+  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-lg font-semibold text-slate-950 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-900/10"
+/>
 
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">
                     credits
                   </span>
                 </div>
 
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-sm font-semibold text-slate-400">
                   Minimum purchase: 20 credits
                 </p>
               </div>
