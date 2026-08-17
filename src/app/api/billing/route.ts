@@ -32,13 +32,10 @@ export async function GET() {
       );
     }
 
-    const companyId =
-      user.companyId;
+    const companyId = user.companyId;
 
     const wallet =
-      await creditService.getWallet(
-        companyId
-      );
+      await creditService.getWallet(companyId);
 
     const [
       transactions,
@@ -123,21 +120,28 @@ export async function GET() {
         })
       ),
     });
-    } catch (error) {
-  console.error("=================================");
-  console.error("BILLING API ERROR");
-  console.error("=================================");
-  console.error(error);
+  } catch (error) {
+    console.error(
+      "================================="
+    );
+    console.error(
+      "BILLING API ERROR"
+    );
+    console.error(
+      "================================="
+    );
+    console.error(error);
 
-  return NextResponse.json(
-    {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Unable to load billing information.",
-    },
-    {
-      status: 500,
-    }
-  );
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unable to load billing information.",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
 }
