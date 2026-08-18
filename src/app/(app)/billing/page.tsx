@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   ArrowDown,
+  ArrowRight,
   ArrowUp,
   CheckCircle2,
   Clock3,
@@ -500,60 +501,82 @@ const [customCredits, setCustomCredits] =
 
   return (
     <DashboardLayout>
-      <div className="space-y-8 p-6 lg:p-8">
+      <div className="space-y-6 p-6 lg:p-8">
         </div>
 
         {/* -------------------------------------------------- */}
         {/* HEADER                                             */}
         {/* -------------------------------------------------- */}
 
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="mb-2 flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-white">
-                <CreditCard
-                  size={18}
-                  strokeWidth={2}
-                />
-              </div>
+        <div className="relative mb-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+  {/* Subtle decorative background */}
+  <div className="pointer-events-none absolute inset-y-0 right-1/4 w-1/2 opacity-60">
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(59,130,246,0.12),_transparent_55%)]" />
+    <div className="absolute inset-0 bg-[radial-gradient(circle,_rgba(99,102,241,0.18)_1px,_transparent_1px)] [background-size:12px_12px] opacity-30" />
+  </div>
 
-              <span className="text-sm font-medium text-slate-500">
-                Account Billing
-              </span>
-            </div>
+  <div className="relative flex items-center justify-between gap-8 px-6 py-6 lg:px-7">
+    {/* Left: Billing identity */}
+    <div className="flex min-w-0 items-center gap-5">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm">
+        <CreditCard size={19} />
+      </div>
 
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-950 lg:text-3xl">
-              Billing
-            </h1>
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          Account Billing
+        </p>
 
-            <p className="mt-1 text-sm gap-2 text-slate-500">
-              Manage credits, verification costs
-              and transaction history.
-            </p>
-          </div>
+        <h1 className="mt-0.5 text-3xl font-bold tracking-tight text-slate-950">
+          Billing
+        </h1>
 
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-            <WalletCards
-              size={18}
-              className="text-slate-500"
-            />
+        <p className="mt-1 text-xs text-slate-500">
+          Manage credits, verification costs and transaction history.
+        </p>
+      </div>
+    </div>
 
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
-                Available credits
-              </p>
+    {/* Right: Available credits */}
+    <div className="flex shrink-0 items-center gap-5 border-l border-slate-100 pl-6">
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          Available credits
+        </p>
 
-              <p className="text-lg font-semibold text-slate-950">
-                {loading
-                  ? "—"
-                  : formatNumber(
-                      billing?.wallet.balance ??
-                        0
-                    )}
-              </p>
-            </div>
-          </div>
+        <div className="mt-0.5 flex items-baseline gap-2">
+          <p className="text-2xl font-bold tracking-tight text-slate-950">
+            {billing?.wallet?.balance ?? 0}
+          </p>
+
+          <span className="text-xs font-medium text-slate-500">
+            credits
+          </span>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            document
+              .getElementById("purchase-credits")
+              ?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+          }}
+          className="mt-2 flex h-8 w-44 items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
+        >
+          Purchase credits
+          <ArrowRight size={14} />
+        </button>
+      </div>
+
+      <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+        <WalletCards size={24} />
+      </div>
+    </div>
+  </div>
+</div>
 
         {/* -------------------------------------------------- */}
         {/* ERROR                                               */}
